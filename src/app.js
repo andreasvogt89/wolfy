@@ -6,7 +6,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const middlewares = require('./middlewares');
-const api = require('./api');
+const persons = require('./easyway/persons');
 
 const app = express();
 
@@ -17,11 +17,11 @@ app.use(express.json());
 
 app.get('/', (req, res) => {
   res.json({
-    message: '🦄🌈✨👋🌎🌍🌏✨🌈🦄'
+    message: 'Server is running☢'
   });
 });
 
-app.use('/api/v1', api);
+app.use('/persons', persons);
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
