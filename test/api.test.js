@@ -2,24 +2,28 @@ const request = require('supertest');
 
 const app = require('../src/app');
 
-describe('GET /api/v1', () => {
-  it('responds with a json message', (done) => {
+describe('POST /easyway/add', () => {
+  it('add object into db', (done) => {
     request(app)
-      .get('/api/v1')
-      .set('Accept', 'application/json')
+      .post('easyway/add')
+      .set({ 'collectionName': 'persons', Accept: 'application/json' })
+      .send({person:{
+        name: 'Andreas',
+        phone: '0798868844',
+        email: 'andreas.vogt@shokodev.ch',
+        address: 'Wangenstrasse 12',
+        city: 'Herzogenbuchsee',
+        postcode: 3360,
+        age: 31,
+        gender: 'M',
+        event: 'cheffe'
+        },
+      created_at: new Date()
+      })
       .expect('Content-Type', /json/)
-      .expect(200, {
-        message: 'API - 👋🌎🌍🌏'
+      .expect(201, {
+        id: 'some fixed id',
+        name: 'john'
       }, done);
-  });
-});
-
-describe('GET /api/v1/emojis', () => {
-  it('responds with a json message', (done) => {
-    request(app)
-      .get('/api/v1/emojis')
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(200, ['😀', '😳', '🙄'], done);
   });
 });
