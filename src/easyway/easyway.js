@@ -7,11 +7,12 @@ const dbName = 'easyway-db';
 
 /**
  * Get db Collection as array
- * Headers = {CollectionName = ""}
+ * Headers = {Collection = ""}
  */
 router.get('/collectionNames', async (req, res, next) => {
   try{
-    res.send(await getCollectionNames());
+    let collections = await getCollectionNames();
+    res.send(collections.map(collections => collections.name));
   } catch (err){
     next(err);
   }
@@ -19,12 +20,12 @@ router.get('/collectionNames', async (req, res, next) => {
 
 /**
  * Get db Collection as array
- * Headers = {CollectionName = ""}
+ * Headers = {Collection = ""}
  */
 router.get('/collection', async (req, res, next) => {
-  logger.info('fetch all {0} from db', req.headers.collctionName);
+  logger.info('fetch all {0} from db', req.headers.collection);
   try{
-    const collection = await loadCollection(req.headers.collctionName);
+    const collection = await loadCollection(req.headers.collection);
     res.send(await collection.find({}).toArray());
   } catch (err){
     next(err);
@@ -34,12 +35,12 @@ router.get('/collection', async (req, res, next) => {
 /**
  * Add data to DB
  * Body = Entry object
- * Headers = {collectionName = ""}
+ * Headers = {collection = ""}
  */
 router.post('/add', async (req, res,next) => {
-  logger.info('add to {0} this -> {1}', req.headers.collctionName, req.body);
+  logger.info('add to {0} this -> {1}', req.headers.collection, req.body);
   try {
-    const collection = await loadCollection();
+    const collection = await loadCollection(req.headers.collection);
     await collection.insertOne(
       req.body);
     res.status(201).send();
@@ -51,12 +52,12 @@ router.post('/add', async (req, res,next) => {
 
 /**
  * Delete mongodb entry
- * Headers = {collectionName = ""}
+ * Headers = {collection = ""}
  */
 router.delete('/:id', async (req, res,next) => {
-  logger.info('delete {1} this @ {0}', req.headers.collctionName, req.body);
+  logger.info('delete {1} this @ {0}', req.headers.collction, req.body);
   try {
-    const collection = await loadCollection(req.headers.collectionName);
+    const collection = await loadCollection(req.headers.collection);
     await collection.deleteOne({_id: new mongodb.ObjectID(req.params.id)});
     res.status(200).send();
   } catch (err){
