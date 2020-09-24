@@ -23,6 +23,7 @@
     "helmet": "^4.1.0",
     "mongodb": "^3.6.2",
     "morgan": "^1.10.0",
+    "path": "^0.12.7",
     "winston": "^3.3.3"
   },
   "devDependencies": {
