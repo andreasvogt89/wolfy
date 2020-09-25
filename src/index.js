@@ -12,9 +12,9 @@ const httpsPort = process.env.httpsPort || 4556
 logger.info(fs.realpathSync('.'));
 try {
 // Certificate
-  const privateKey = fs.readFileSync(path.join(__dirname,'../cert/privkey.pem'));
-  const certificate = fs.readFileSync(path.join(__dirname,'../cert/cert.pem'));
-  const ca = fs.readFileSync(path.join(__dirname,'../cert/chain.pem'));
+  const privateKey = fs.readFileSync(path.join(__dirname,'privkey.pem'));
+  const certificate = fs.readFileSync(path.join(__dirname,'cert.pem'));
+  const ca = fs.readFileSync(path.join(__dirname,'chain.pem'));
   const credentials = {
     key: privateKey,
     cert: certificate,
