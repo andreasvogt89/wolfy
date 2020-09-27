@@ -2,16 +2,17 @@ const express = require('express');
 const mongodb = require('mongodb');
 const logger = require('../serverlog/logger')
 const router = express.Router();
-const dbURL = 'mongodb://192.168.0.220:27017/easyway-db';
+const { getCollectionNames, loadCollection } = require('../mongodb');
 const dbName = 'easyway-db';
+const { authenticateToken } = require('../auth');
 
 /**
  * Get db Collection as array
  * Headers = {Collection = ""}
  */
-router.get('/collectionNames', async (req, res, next) => {
+router.get('/collectionNames', authenticateToken, async (req, res, next) => {
   try{
-    let collections = await getCollectionNames();
+    let collections = await getCollectionNames(dbName);
     res.send(collections.map(collections => collections.name));
   } catch (err){
     next(err);
@@ -25,7 +26,7 @@ router.get('/collectionNames', async (req, res, next) => {
 router.get('/collection', async (req, res, next) => {
   logger.info('fetch all {0} from db', req.headers.collection);
   try{
-    const collection = await loadCollection(req.headers.collection);
+    const collection = await loadCollection(req.headers.collection,dbName);
     res.send(await collection.find({}).toArray());
   } catch (err){
     next(err);
@@ -40,7 +41,7 @@ router.get('/collection', async (req, res, next) => {
 router.post('/add', async (req, res,next) => {
   logger.info('add to {0} this -> {1}', req.headers.collection, req.body);
   try {
-    const collection = await loadCollection(req.headers.collection);
+    const collection = await loadCollection(req.headers.collection,dbName);
     await collection.insertOne(
       req.body);
     res.status(201).send();
@@ -57,7 +58,7 @@ router.post('/add', async (req, res,next) => {
 router.delete('/:id', async (req, res,next) => {
   logger.info('delete {1} this @ {0}', req.headers.collction, req.body);
   try {
-    const collection = await loadCollection(req.headers.collection);
+    const collection = await loadCollection(req.headers.collection,dbName);
     await collection.deleteOne({_id: new mongodb.ObjectID(req.params.id)});
     res.status(200).send();
   } catch (err){
@@ -66,27 +67,7 @@ router.delete('/:id', async (req, res,next) => {
   }
 });
 
-async function loadCollection(collectionName) {
-  try {
-    const dbInstance = await mongodb.MongoClient.connect(dbURL, {
-      useNewUrlParser: true, useUnifiedTopology: true,
-    });
-    return dbInstance.db(dbName).collection(collectionName);
-  } catch (err){
-    throw new Error(`cant connect to db: ${err}`);
-  }
-}
 
-async function getCollectionNames() {
-  try {
-    const dbInstance = await mongodb.MongoClient.connect(dbURL, {
-      useNewUrlParser: true, useUnifiedTopology: true,
-    });
-    return dbInstance.db(dbName).listCollections({}).toArray();
-  } catch (err){
-    throw new Error(`cant connect to db: ${err}`);
-  }
-}
 
 
 module.exports = router;
