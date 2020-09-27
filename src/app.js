@@ -27,6 +27,7 @@ app.get('/', (req, res) => {
 
 app.post('/login', async (req, res, next) => {
   // Read username and password from request body
+  logger.info('login from: ' + res.location.toString())
   try {
     const { username, password } = req.body;
     const collection = await loadCollection("users","UserDB");

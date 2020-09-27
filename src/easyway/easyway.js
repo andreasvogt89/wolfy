@@ -23,7 +23,7 @@ router.get('/collectionNames', authenticateToken, async (req, res, next) => {
  * Get db Collection as array
  * Headers = {Collection = ""}
  */
-router.get('/collection', async (req, res, next) => {
+router.get('/collection',authenticateToken, async (req, res, next) => {
   logger.info('fetch all {0} from db', req.headers.collection);
   try{
     const collection = await loadCollection(req.headers.collection,dbName);
@@ -38,7 +38,7 @@ router.get('/collection', async (req, res, next) => {
  * Body = Entry object
  * Headers = {collection = ""}
  */
-router.post('/add', async (req, res,next) => {
+router.post('/add', authenticateToken, async (req, res,next) => {
   logger.info('add to {0} this -> {1}', req.headers.collection, req.body);
   try {
     const collection = await loadCollection(req.headers.collection,dbName);
@@ -55,7 +55,7 @@ router.post('/add', async (req, res,next) => {
  * Delete mongodb entry
  * Headers = {collection = ""}
  */
-router.delete('/:id', async (req, res,next) => {
+router.delete('/:id', authenticateToken, async (req, res,next) => {
   logger.info('delete {1} this @ {0}', req.headers.collction, req.body);
   try {
     const collection = await loadCollection(req.headers.collection,dbName);
