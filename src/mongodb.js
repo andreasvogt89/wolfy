@@ -1,5 +1,5 @@
 const mongodb = require('mongodb');
-const dbURL = 'mongodb://172.17.0.4:27017';
+const dbURL = 'mongodb://172.17.0.5:27017';
 
 
 async function loadCollection(collectionName, dbName) {
