@@ -29,6 +29,7 @@ router.get('/collection',authenticateToken, async (req, res, next) => {
     const collection = await loadCollection(req.headers.collection,dbName);
     res.send(await collection.find({}).toArray());
   } catch (err){
+    logger.error("Can't load collection: {0} cause: {1}", req.headers.collection, err)
     next(err);
   }
 });
