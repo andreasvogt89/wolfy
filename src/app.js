@@ -27,7 +27,7 @@ app.get('/', (req, res) => {
 
 app.post('/login', async (req, res, next) => {
   // Read username and password from request body
-  logger.info('login from: ' + res.location.toString())
+  logger.info('login from: ' + req.headers['x-forwarded-for'] || req.connection.remoteAddress)
   try {
     const { username, password } = req.body;
     const collection = await loadCollection("users","UserDB");
@@ -39,7 +39,7 @@ app.post('/login', async (req, res, next) => {
         username: user.username,
         role: user.role
       }, process.env.TOKEN_SECRET, { expiresIn: '10s' });
-      res.json({
+      res.status(200).json({
         accessToken
       });
     } else {

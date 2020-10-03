@@ -1,12 +1,33 @@
 const request = require('supertest');
 const app = require('../src/app');
 const assert = require('assert');
+let token = "";
+
+
+describe('POST /login', () => {
+  let user = {
+    username: "Andreas",
+    password: "4556@A89xy$$",
+    role:"Admin"
+  }
+  it('login and assert token', (done) => {
+    request(app)
+      .post('/login')
+      .set({Accept: 'application/json'})
+      .send(user)
+      .expect('Content-Type', /json/)
+      .expect(200).then(response => {
+        token = response.body.accessToken
+        assert(response.body, typeof Object)})
+      .finally(done)
+  });
+});
 
 describe('GET /easyway/collectionNames', () => {
   it('responds collection names of mongodb', (done) => {
     request(app)
       .get('/easyway/collectionNames')
-      .set('Accept', 'application/json')
+      .set({'Authorization': "Bearer " + token, Accept: 'application/json' })
       .expect('Content-Type', /json/)
       .expect(200, ["events","persons"],done)
   });
@@ -16,7 +37,7 @@ describe('GET /easyway/collection', () => {
   it('responds collection  persons of mongodb', (done) => {
     request(app)
       .get('/easyway/collection')
-      .set({ 'collection': 'persons', Accept: 'application/json' })
+      .set({'Authorization': "Bearer " + token, 'collection': 'persons', Accept: 'application/json' })
       .expect('Content-Type', /json/)
       .expect(200).then(response => {
         assert(response.body, typeof Array)
@@ -31,7 +52,8 @@ describe('GET /easyway/collection', () => {
       .get('/easyway/collection')
       .set({
         'collection': 'events',
-        Accept: 'application/json'
+        Accept: 'application/json',
+        'Authorization': "Bearer " + token,
       })
       .expect('Content-Type', /json/)
       .expect(200)
@@ -48,7 +70,8 @@ describe('GET /easyway/collection', () => {
         .post('/easyway/add')
         .set({
           'collection': 'persons',
-          Accept: 'application/json'
+          Accept: 'application/json',
+          'Authorization': "Bearer " + token,
         })
         .send({
           person: {
@@ -74,7 +97,8 @@ describe('GET /easyway/collection', () => {
         .post('/easyway/add')
         .set({
           'collection': 'events',
-          Accept: 'application/json'
+          Accept: 'application/json',
+          'Authorization': "Bearer " + token,
         })
         .send({
           event: {
@@ -82,7 +106,8 @@ describe('GET /easyway/collection', () => {
             address: 'Wangenstrasse 12',
             city: 'Herzogenbuchsee',
             postcode: 3360,
-            participantS: ["487534714542"],
+            participant: ["487534714542","378265285","43857953"],
+            eventDate: new Date(),
             comments: "Party für  Ü60",
           },
           created_at: new Date()

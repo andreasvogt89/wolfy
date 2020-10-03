@@ -24,12 +24,12 @@ router.get('/collectionNames', authenticateToken, async (req, res, next) => {
  * Headers = {Collection = ""}
  */
 router.get('/collection',authenticateToken, async (req, res, next) => {
-  logger.info('fetch all {0} from db', req.headers.collection);
+  logger.info('fetch all' + req.headers.collection + 'from db');
   try{
     const collection = await loadCollection(req.headers.collection,dbName);
     res.send(await collection.find({}).toArray());
   } catch (err){
-    logger.error("Can't load collection: {0} cause: {1}", req.headers.collection, err)
+    logger.error(`Can't load collection: ${req.headers.collection} cause: ${err}`)
     next(err);
   }
 });
@@ -40,14 +40,14 @@ router.get('/collection',authenticateToken, async (req, res, next) => {
  * Headers = {collection = ""}
  */
 router.post('/add', authenticateToken, async (req, res,next) => {
-  logger.info('add to {0} this -> {1}', req.headers.collection, req.body);
+  logger.info(`add to ${req.headers.collection} this -> ${req.body}`);
   try {
     const collection = await loadCollection(req.headers.collection,dbName);
     await collection.insertOne(
       req.body);
     res.status(201).send();
   } catch (err){
-    logger.error('add to db failed: {0}',err.message);
+    logger.error('add to db failed: ' + err.message);
     next(err);
   }
 });
@@ -57,13 +57,13 @@ router.post('/add', authenticateToken, async (req, res,next) => {
  * Headers = {collection = ""}
  */
 router.delete('/:id', authenticateToken, async (req, res,next) => {
-  logger.info('delete {1} this @ {0}', req.headers.collction, req.body);
+  logger.info(`delete ${req.headers.collection} this -> ${req.body}`);
   try {
     const collection = await loadCollection(req.headers.collection,dbName);
     await collection.deleteOne({_id: new mongodb.ObjectID(req.params.id)});
     res.status(200).send();
   } catch (err){
-    logger.error("Delete object failed: {0}", err.message);
+    logger.error("Delete object failed: " + err.message);
     next(err);
   }
 });
