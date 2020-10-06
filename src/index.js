@@ -6,10 +6,9 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const httpPort = process.env.httpPort || 5544
-const httpsPort = process.env.httpsPort || 4556
+const httpPort = process.env.HTTP_PORT || 5544
+const httpsPort = process.env.HTTPS_PORT || 4556
 
-logger.info(fs.realpathSync('.'));
 try {
 // Certificate
   const privateKey = fs.readFileSync(path.join(__dirname,'./cert/privkey.pem'),'utf8');

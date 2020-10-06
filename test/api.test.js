@@ -7,8 +7,8 @@ let token = "";
 
 describe('POST /login', () => {
   let user = {
-    username: process.env.TESTUSERNAME,
-    password: process.env.TESTPASSWORD,
+    username: process.env.TEST_USERNAME,
+    password: process.env.TEST_PASSWORD,
     role:"Admin"
   }
   it('login and assert token', (done) => {
