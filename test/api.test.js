@@ -1,13 +1,14 @@
 const request = require('supertest');
 const app = require('../src/app');
 const assert = require('assert');
+require('dotenv').config();
 let token = "";
 
 
 describe('POST /login', () => {
   let user = {
-    username: "Andreas",
-    password: "4556@A89xy$$",
+    username: process.env.TESTUSERNAME,
+    password: process.env.TESTPASSWORD,
     role:"Admin"
   }
   it('login and assert token', (done) => {
