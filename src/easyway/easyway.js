@@ -56,14 +56,14 @@ router.post('/add', authenticateToken, async (req, res,next) => {
 /**
  * Change data in DB
  * Body = Entry object with changed properties
- * Headers = {collection = ""}
+ * Headers = {collection = "", type = ""}
  */
 router.put('/change', authenticateToken, async (req, res,next) => {
   logger.info(`change in ${req.headers.collection} this -> ${req.body}`);
   try {
     const collection = await loadCollection(req.headers.collection,dbName);
     let item = await collection.findOne({_id: new mongodb.ObjectID(req.body._id)});
-    for (const [key, value] of Object.entries(req.body)) {
+    for (const [key, value] of Object.entries(req.body[req.headers.type])) {
       await item.updateOne({_id: new mongodb.ObjectID(req.body._id)},{$set:{[key]: value}});
     }
     res.status(200).send();
