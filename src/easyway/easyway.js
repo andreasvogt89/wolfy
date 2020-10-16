@@ -40,7 +40,7 @@ router.get('/collection',authenticateToken, async (req, res, next) => {
  * Headers = {collection = ""}
  */
 router.post('/add', authenticateToken, async (req, res,next) => {
-  logger.info(`add to ${req.headers.collection} this -> ${req.body}`);
+  logger.info(`add object to ${req.headers.collection}`);
   try {
     const collection = await loadCollection(req.headers.collection,dbName);
     await collection.insertOne(
@@ -55,11 +55,11 @@ router.post('/add', authenticateToken, async (req, res,next) => {
 //TODO Change not finished
 /**
  * Change data in DB
- * Body = Entry object with changed properties
+ * Body = Object only with changed properties
  * Headers = {collection = "", type = ""}
  */
 router.put('/change', authenticateToken, async (req, res,next) => {
-  logger.info(`change in ${req.headers.collection} this -> ${req.body}`);
+  logger.info(`change in ${req.headers.collection} this -> ${req.body._id}`);
   try {
     const collection = await loadCollection(req.headers.collection,dbName);
     let item = await collection.findOne({_id: new mongodb.ObjectID(req.body._id)});
@@ -77,8 +77,8 @@ router.put('/change', authenticateToken, async (req, res,next) => {
  * Delete mongodb entry
  * Headers = {collection = ""}
  */
-router.delete('/:id', authenticateToken, async (req, res,next) => {
-  logger.info(`delete ${req.headers.collection} this -> ${req.body}`);
+router.delete('/delete', authenticateToken, async (req, res,next) => {
+  logger.info(`delete in collection ${req.headers.collection} this -> ${req.params.id}`);
   try {
     const collection = await loadCollection(req.headers.collection,dbName);
     await collection.deleteOne({_id: new mongodb.ObjectID(req.params.id)});
