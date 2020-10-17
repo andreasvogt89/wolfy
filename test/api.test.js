@@ -14,27 +14,17 @@ let user = {
 }
 
 describe('POST /login', () => {
-  it('login and assert token',  async (done) => {
-    request(app)
+  it('login and assert token',  async () => {
+    await request(app)
       .post('/login')
       .set({Accept: 'application/json'})
       .send(user)
       .expect('Content-Type', /json/)
-      .expect(200).then(response => {
-        token = response.body.accessToken;
-        assert(response.body, typeof Object);
+      .expect(200)
+      .then((res) => {
+        token = res.body.accessToken;
+        assert(res.body, typeof Object);
       });
-      done();
-  });
-});
-
-
-describe('GET /easyway/collectionNames', () => {
-  it('responds collection names of mongodb', (done) => {
-    request(app)
-      .get('/easyway/collectionNames')
-      .set({'Authorization': "Bearer " + token, Accept: 'application/json' })
-      .expect(200, ["events","persons"],done)
   });
 });
 
@@ -55,26 +45,23 @@ describe('POST /easyway/add', () => {
         },
         created_at: new Date()
       })
-      .expect(201, done)
+      .expect(201, done);
   });
 });
 
 describe('GET /easyway/collection', () => {
-  it('check if before created object exists in db', (done) => {
-    request(app)
+  it('get collection events of mongodb an check if before created person exists', async () => {
+    await request(app)
       .get('/easyway/collection')
-      .set({
-        'collection': 'events',
-        Accept: 'application/json',
-        'Authorization': "Bearer " + token,
-      })
+      .set({'Authorization': "Bearer " + token, 'collection': 'events', Accept: 'application/json' })
       .expect(200)
       .then(response => {
-        assert(response === typeof Array,"Check if response is an array");
+        assert(response.body, typeof Array);
         dbTestEvent = response.body.find(item => item.event.name === "Testing");
         assert(dbTestEvent === typeof Object,"Check if before created saved object is in db(Array filtered out by name) ");
-      })
-      done()
+      }).catch(err => {
+        console.log(err.message);
+      });
   });
 });
 
@@ -101,40 +88,54 @@ describe('GET /easyway/collection', () => {
           },
           created_at: new Date()
         })
-        .expect(201, done)
+        .expect(201, done);
     });
   });
 
 describe('GET /easyway/collection', () => {
-  it('responds collection  persons of mongodb', (done) => {
-    request(app)
+  it('get collection persons of mongodb an check if before created person exists', async () => {
+    await request(app)
       .get('/easyway/collection')
       .set({'Authorization': "Bearer " + token, 'collection': 'persons', Accept: 'application/json' })
-      .expect(200).then(response => {
+      .expect(200)
+      .then(response => {
       assert(response.body, typeof Array);
       dbTestPerson = response.body.find(item => item.person.name === "Andreas");
       assert(dbTestPerson === typeof Object,"Check if before created saved object is in db(Array filtered out by name) ");
-    })
-    done()
+    }).catch(err => {
+      console.log(err.message);
+    });
   });
 });
+
 
 describe('DELETE /easyway/delete', () => {
   it('delete test event', (done) => {
     request(app)
-      .delete('/easyway/delete')
+      .delete('/easyway/delete/'+ dbTestEvent._id)
       .set({'Authorization': "Bearer " + token, 'collection': 'events', Accept: 'application/json' })
-      .query({'id': dbTestEvent._id})
       .expect(200,done);
   });
 });
 
 describe('DELETE /easyway/delete', () => {
-  it('delete test event', (done) => {
+  it('delete test person', (done) => {
     request(app)
-      .delete('/easyway/delete')
+      .delete('/easyway/delete/'+ dbTestPerson._id)
       .set({'Authorization': "Bearer " + token, 'collection': 'persons', Accept: 'application/json' })
-      .query({'id': dbTestPerson._id})
+      .expect(200,done);
+  });
+});
+
+
+describe('GET /easyway/collectionNames', () => {
+  it('responds collection names of mongodb', (done) => {
+    request(app)
+      .get('/easyway/collectionNames')
+      .set({
+        Accept: 'application/json',
+        'Authorization': "Bearer " + token,
+      })
       .expect(200,done);
   });
 });
