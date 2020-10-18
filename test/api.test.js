@@ -14,7 +14,7 @@ let user = {
 }
 
 describe('POST /login', () => {
-  it('login and assert token',  async () => {
+  it('login and assert token',  async() => {
     await request(app)
       .post('/login')
       .set({Accept: 'application/json'})
@@ -28,6 +28,7 @@ describe('POST /login', () => {
   });
 });
 
+//db events
 describe('POST /easyway/add', () => {
   it('add object into db events', (done) => {
     request(app)
@@ -50,7 +51,7 @@ describe('POST /easyway/add', () => {
 });
 
 describe('GET /easyway/collection', () => {
-  it('get collection events of mongodb an check if before created person exists', async () => {
+  it('get collection events of mongodb an check if before created event exists', async() => {
     await request(app)
       .get('/easyway/collection')
       .set({'Authorization': "Bearer " + token, 'collection': 'events', Accept: 'application/json' })
@@ -65,6 +66,41 @@ describe('GET /easyway/collection', () => {
   });
 });
 
+describe('PUT /easyway/change', () => {
+  it('change event name', (done) => {
+    request(app)
+      .put('/easyway/change/'+ dbTestEvent._id)
+      .set({
+        'collection': 'events',
+        'object':'event',
+        Accept: 'application/json',
+        'Authorization': "Bearer " + token,
+      })
+      .send({event: {
+          name: 'TestingChanged'
+        }
+      })
+      .expect(200, done);
+  });
+});
+
+describe('GET /easyway/collection', () => {
+  it('get collection events of mongodb an check if before changed events is properly saved', async () => {
+    await request(app)
+      .get('/easyway/collection')
+      .set({'Authorization': "Bearer " + token, 'collection': 'events', Accept: 'application/json' })
+      .expect(200)
+      .then(response => {
+        assert(response.body, typeof Array);
+        assert(dbTestEvent.name === response.body.find(item => item.event.name === "TestingChanged").name,"Check if before changed object is in db(Array filtered out by name) ");
+        dbTestEvent = response.body.find(item => item.event.name === "TestingChanged");
+      }).catch(err => {
+        console.log(err.message);
+      });
+  });
+});
+
+//db persons
  describe('POST /easyway/collection', () => {
     it('add person into db persons and link before created event', (done) => {
       request(app)
@@ -108,7 +144,6 @@ describe('GET /easyway/collection', () => {
   });
 });
 
-
 describe('DELETE /easyway/delete', () => {
   it('delete test event', (done) => {
     request(app)
@@ -127,7 +162,7 @@ describe('DELETE /easyway/delete', () => {
   });
 });
 
-
+//db common
 describe('GET /easyway/collectionNames', () => {
   it('responds collection names of mongodb', (done) => {
     request(app)
