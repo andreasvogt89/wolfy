@@ -1,5 +1,16 @@
 const mongodb = require('mongodb');
-const dbURL = process.env.MONGODB_URL;
+const mongoose = require('mongoose');
+
+require('dotenv').config();
+
+const connectDb = () => {
+  return mongoose.connect(process.env.MONGODB_URL,{
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useCreateIndex: true
+  });
+};
 
 
 async function loadCollection(collectionName, dbName) {
@@ -13,6 +24,23 @@ async function loadCollection(collectionName, dbName) {
   }
 }
 
+const userSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    password:{
+      type: String,
+      required: true,
+    }
+  },
+  { timestamps: true },
+);
+
+const User = mongoose.model('User', userSchema);
+
 async function getCollectionNames(dbName) {
   try {
     const dbInstance = await mongodb.MongoClient.connect(dbURL, {
@@ -25,6 +53,8 @@ async function getCollectionNames(dbName) {
 }
 
 module.exports = {
+  connectDb,
+  User,
   loadCollection,
   getCollectionNames,
 }
