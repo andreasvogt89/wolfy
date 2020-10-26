@@ -162,15 +162,3 @@ describe('DELETE /easyway/delete', () => {
   });
 });
 
-//db common
-describe('GET /easyway/collectionNames', () => {
-  it('responds collection names of mongodb', (done) => {
-    request(app)
-      .get('/easyway/collectionNames')
-      .set({
-        Accept: 'application/json',
-        'Authorization': "Bearer " + token,
-      })
-      .expect(200,done);
-  });
-});

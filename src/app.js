@@ -11,7 +11,7 @@ require('dotenv').config();
 
 const middlewares = require('./middlewares');
 const easyWay = require('./easyway/easyway');
-const {loadCollection, User} = require('./mongodb');
+const { User } = require('./mongodb');
 const app = express();
 
 app.use(morgan('dev'));

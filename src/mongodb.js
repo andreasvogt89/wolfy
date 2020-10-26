@@ -1,6 +1,9 @@
-const mongodb = require('mongodb');
 const mongoose = require('mongoose');
-
+const schemaName = {
+  USER: "users",
+  EVENT: "events",
+  PERSON: "persons",
+}
 require('dotenv').config();
 
 const connectDb = () => {
@@ -11,18 +14,6 @@ const connectDb = () => {
     useCreateIndex: true
   });
 };
-
-
-async function loadCollection(collectionName, dbName) {
-  try {
-    const dbInstance = await mongodb.MongoClient.connect(dbURL, {
-      useNewUrlParser: true, useUnifiedTopology: true,
-    });
-    return dbInstance.db(dbName).collection(collectionName);
-  } catch (err){
-    throw new Error(`cant connect to db: ${err}`);
-  }
-}
 
 const userSchema = new mongoose.Schema(
   {
@@ -39,22 +30,35 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const User = mongoose.model('User', userSchema);
+const eventSchema = new mongoose.Schema(
+  { event: {
+    name: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    eventDate:{
+      type: Date,
+      required: true,
+    },
+    place: {
+      type: String,
+      required: true,
+    },
+    participants: {
+      type: Array,
+      required: true
+    }
+  } },
+  { timestamps: true },
+);
 
-async function getCollectionNames(dbName) {
-  try {
-    const dbInstance = await mongodb.MongoClient.connect(dbURL, {
-      useNewUrlParser: true, useUnifiedTopology: true,
-    });
-    return dbInstance.db(dbName).listCollections({}).toArray();
-  } catch (err){
-    throw new Error(`cant connect to db: ${err}`);
-  }
-}
+const User = mongoose.model(schemaName.USER, userSchema);
+const Event = mongoose.model(schemaName.EVENT, eventSchema);
 
 module.exports = {
   connectDb,
   User,
-  loadCollection,
-  getCollectionNames,
+  Event,
+  schemaName
 }

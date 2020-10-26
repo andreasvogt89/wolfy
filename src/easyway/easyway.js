@@ -2,22 +2,8 @@ const express = require('express');
 const mongodb = require('mongodb');
 const logger = require('../serverlog/logger')
 const router = express.Router();
-const { getCollectionNames, loadCollection } = require('../mongodb');
-const dbName = 'easyway-db';
+const { Event, Person, schemaName } = require('../mongodb');
 const { authenticateToken } = require('../auth');
-
-/**
- * Get db Collection as array
- * Headers = {Collection = ""}
- */
-router.get('/collectionNames', authenticateToken, async (req, res, next) => {
-  try{
-    let collections = await getCollectionNames(dbName);
-    res.send(collections.map(collections => collections.name));
-  } catch (err){
-    next(err);
-  }
-});
 
 /**
  * Get db Collection as array
@@ -26,8 +12,8 @@ router.get('/collectionNames', authenticateToken, async (req, res, next) => {
 router.get('/collection',authenticateToken, async (req, res, next) => {
   logger.info('fetch all ' + req.headers.collection + ' from db');
   try{
-    const collection = await loadCollection(req.headers.collection,dbName);
-    res.send(await collection.find({}).toArray());
+    const model = getMongooseModel(req.headers.collection);
+    res.send(await model.find({}));
   } catch (err){
     logger.error(`Can't load collection: ${req.headers.collection} cause: ${err}`)
     next(err);
@@ -42,9 +28,8 @@ router.get('/collection',authenticateToken, async (req, res, next) => {
 router.post('/add', authenticateToken, async (req, res,next) => {
   logger.info(`add object to ${req.headers.collection}`);
   try {
-    const collection = await loadCollection(req.headers.collection,dbName);
-    await collection.insertOne(
-      req.body);
+    const model = getMongooseModel(req.headers.collection);
+    await model.create(req.body)
     res.status(201).send();
   } catch (err){
     logger.error('add to db failed: ' + err.message);
@@ -61,7 +46,7 @@ router.post('/add', authenticateToken, async (req, res,next) => {
 router.put('/change/:id', authenticateToken, async (req, res,next) => {
   logger.info(`change in ${req.headers.collection} this -> ${req.params.id}`);
   try {
-    const collection = await loadCollection(req.headers.collection,dbName);
+   // const collection = await loadCollection(req.headers.collection,dbName);
     for (const [key, value] of Object.entries(req.body[req.headers.object])) {
       await collection.updateOne({_id: new mongodb.ObjectID(req.params.id)},{$set:{[key]: value}});
     }
@@ -79,8 +64,8 @@ router.put('/change/:id', authenticateToken, async (req, res,next) => {
 router.delete('/delete/:id', authenticateToken, async (req, res,next) => {
   logger.info(`delete in collection ${req.headers.collection} this -> ${req.params.id}`);
   try {
-    const collection = await loadCollection(req.headers.collection,dbName);
-    await collection.deleteOne({_id: new mongodb.ObjectID(req.params.id)});
+    const model = getMongooseModel(req.headers.collection);
+    await model.deleteOne({_id: req.params.id});
     res.status(200).send();
   } catch (err){
     logger.error("Delete object failed: " + err.message);
@@ -88,7 +73,13 @@ router.delete('/delete/:id', authenticateToken, async (req, res,next) => {
   }
 });
 
-
+function getMongooseModel(modelName) {
+  if(modelName === schemaName.EVENT){
+    return Event
+  } else {
+    return Person
+  }
+}
 
 
 module.exports = router;
