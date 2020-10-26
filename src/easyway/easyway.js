@@ -29,7 +29,7 @@ router.post('/add', authenticateToken, async (req, res,next) => {
   logger.info(`add object to ${req.headers.collection}`);
   try {
     const model = getMongooseModel(req.headers.collection);
-    await model.create(req.body)
+    await model.create(req.body);
     res.status(201).send();
   } catch (err){
     logger.error('add to db failed: ' + err.message);
@@ -46,10 +46,8 @@ router.post('/add', authenticateToken, async (req, res,next) => {
 router.put('/change/:id', authenticateToken, async (req, res,next) => {
   logger.info(`change in ${req.headers.collection} this -> ${req.params.id}`);
   try {
-   // const collection = await loadCollection(req.headers.collection,dbName);
-    for (const [key, value] of Object.entries(req.body[req.headers.object])) {
-      await collection.updateOne({_id: new mongodb.ObjectID(req.params.id)},{$set:{[key]: value}});
-    }
+    const model = getMongooseModel(req.headers.collection);
+    await model.updateOne({_id: req.params.id},{$set:req.body});
     res.status(200).send();
   } catch (err){
     logger.error('change failed: ' + err.message);
