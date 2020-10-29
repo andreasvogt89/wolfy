@@ -4,6 +4,7 @@ const schemaName = {
   EVENT: "events",
   PERSON: "persons",
 }
+
 require('dotenv').config();
 
 const connectDb = () => {
@@ -56,12 +57,56 @@ const eventSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+const personSchema = new mongoose.Schema(
+  { person: {
+      name: {
+        type: String,
+        required: true,
+      },
+      age: {
+        type: Number,
+        required: true,
+      },
+      address: {
+        type: String,
+        required: true,
+      },
+      city: {
+        type: String,
+        required: true,
+      },
+      postcode: {
+        type: Number,
+        required: true,
+      },
+      email: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: Number,
+        required: true,
+      },
+      event: {
+        type: String,
+        required: true,
+      },
+      gender: {
+        type: String,
+        required: true,
+      },
+    } },
+  { timestamps: true },
+);
+
 const User = mongoose.model(schemaName.USER, userSchema);
 const Event = mongoose.model(schemaName.EVENT, eventSchema);
+const Person = mongoose.model(schemaName.PERSON, personSchema);
 
 module.exports = {
   connectDb,
   User,
   Event,
+  Person,
   schemaName
 }
