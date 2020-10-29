@@ -7,6 +7,7 @@ const logger = require('./serverlog/logger');
 const { connectDb } = require('./mongodb');
 const bcrypt = require('bcrypt');
 
+
 require('dotenv').config();
 
 const middlewares = require('./middlewares');
@@ -30,17 +31,25 @@ require('dotenv').config();
 
 connectDb().then(()=>{
   logger.info("DB connection successful!");
-  //bcrypt.hash("4556@A89xy$$", 2, function(err, hash) {
-   // User.create({username:"Andreas", password:hash});});
+
+  // Create new User manually
+  /*const userdb = require('./userdb');
+  userdb.createUser().then((res)=>{
+  logger.info(res);
+  }).catch(err=>{
+  logger.error(err);
+  });*/
+
 }).catch(err=>{
   logger.error("DB connection failed: " + err)
 });
 
 app.post('/login', async (req, res, next) => {
   // Read username and password from request body
-  logger.info('login from: ' + req.headers['x-forwarded-for'] || req.connection.remoteAddress)
+  logger.info('login form user: ' + req.body.username);
   try {
     const user = await User.find({username: req.body.username});
+    console.log(user);
     const match = await bcrypt.compare(req.body.password, user[0].password);
       if (match) {
         // Generate an access token
