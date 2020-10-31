@@ -42,7 +42,6 @@ const eventSchema = new mongoose.Schema(
   { event: {
     name: {
       type: String,
-      unique: true,
       required: true,
     },
     eventDate:{
@@ -56,14 +55,21 @@ const eventSchema = new mongoose.Schema(
     participants: {
       type: Array,
       required: true
-    }
+    },
+    comments: {
+      type: String,
+    },
   } },
   { timestamps: true },
 );
 
 const personSchema = new mongoose.Schema(
   { person: {
-      name: {
+      firstname: {
+        type: String,
+        required: true,
+      },
+      lastname: {
         type: String,
         required: true,
       },
@@ -75,8 +81,8 @@ const personSchema = new mongoose.Schema(
         type: String,
         required: true,
       },
-      street_umber: {
-        type: String,
+      street_number: {
+        type: Number,
         required: true,
       },
       city: {
@@ -89,19 +95,26 @@ const personSchema = new mongoose.Schema(
       },
       email: {
         type: String,
-        required: true,
       },
       phone: {
         type: Number,
-        required: true,
+      },
+      emergency_phone: {
+        type: Number,
       },
       event: {
-        type: String,
+        type: Array,
         required: true,
       },
       gender: {
         type: gender,
         required: true,
+      },
+      class:{
+        type: String,
+      },
+      comments:{
+        type: String,
       },
     } },
   { timestamps: true },

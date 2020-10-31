@@ -9,7 +9,7 @@ try {
   }
   const user = {
     username: "",
-    password: await bcrypt.hash("pw", 10),
+    password: await bcrypt.hash("", 10),
     role: roles.ADMIN
   }
   logger.info(`Create user: ${JSON.stringify(user)}`);

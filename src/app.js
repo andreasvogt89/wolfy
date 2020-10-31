@@ -31,18 +31,27 @@ require('dotenv').config();
 
 connectDb().then(()=>{
   logger.info("DB connection successful!");
-
   // Create new User manually
-  /*const userdb = require('./userdb');
+ /* const userdb = require('./userdb');
   userdb.createUser().then((res)=>{
   logger.info(res);
   }).catch(err=>{
   logger.error(err);
   });*/
-
 }).catch(err=>{
   logger.error("DB connection failed: " + err)
 });
+
+
+// Delete Persons db
+/*
+  const {Person} = require('./mongodb');
+  Person.deleteMany({}).then(res=>{
+    console.log(res);
+  }).catch(e=> {
+  console.log(e);
+});*/
+
 
 app.post('/login', async (req, res, next) => {
   // Read username and password from request body
