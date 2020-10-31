@@ -4,6 +4,10 @@ const schemaName = {
   EVENT: "events",
   PERSON: "persons",
 }
+const gender = {
+  MALE: "M",
+  FEMALE: "W",
+}
 
 require('dotenv').config();
 
@@ -67,7 +71,11 @@ const personSchema = new mongoose.Schema(
         type: Number,
         required: true,
       },
-      address: {
+      street: {
+        type: String,
+        required: true,
+      },
+      street_umber: {
         type: String,
         required: true,
       },
@@ -92,7 +100,7 @@ const personSchema = new mongoose.Schema(
         required: true,
       },
       gender: {
-        type: String,
+        type: gender,
         required: true,
       },
     } },
