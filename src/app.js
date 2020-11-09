@@ -31,6 +31,7 @@ require('dotenv').config();
 
 connectDb().then(()=>{
   logger.info("DB connection successful!");
+
   // Create new User manually
  /* const userdb = require('./userdb');
   userdb.createUser().then((res)=>{
@@ -38,6 +39,7 @@ connectDb().then(()=>{
   }).catch(err=>{
   logger.error(err);
   });*/
+
 }).catch(err=>{
   logger.error("DB connection failed: " + err)
 });
