@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const logger = require('./serverlog/logger');
 const { connectDb } = require('./mongodb');
 const bcrypt = require('bcrypt');
+const easywayexport = require('./easyway/easyway-export');
 
 
 require('dotenv').config();
@@ -82,6 +83,7 @@ app.post('/login', async (req, res, next) => {
 
 
 app.use('/easyway', easyWay);
+app.use('/export', easywayexport)
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
 
