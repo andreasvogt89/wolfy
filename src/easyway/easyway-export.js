@@ -6,7 +6,7 @@ const exceljs = require('exceljs');
 const { authenticateToken } = require('../auth');
 const { Event, Person } = require('../mongodb');
 
-router.get('/excel/:id',authenticateToken, async (req, res, next) => {
+router.get('/excel/:id', async (req, res, next) => {
   logger.info(`get excel for event: ${req.params.id}`);
   try{
     res.setHeader(
@@ -17,8 +17,8 @@ router.get('/excel/:id',authenticateToken, async (req, res, next) => {
       "Content-Disposition",
       "attachment; filename=" + "graphics.xlsx"
     );
-    const persons = await Person.get({_id: req.params.id});
-    const event = await Event.get({_id: req.params.id});
+    const persons = await Person.find({['person.event']: req.params.id});
+    const event = await Event.findOne({_id: req.params.id});
     let workbook = new exceljs.Workbook();
     let worksheet = workbook.addWorksheet(event[0].event.name);
     worksheet.addTable({
