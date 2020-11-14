@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const logger = require('./serverlog/logger');
 const { connectDb } = require('./mongodb');
 const bcrypt = require('bcrypt');
+const easywayexport = require('./easyway/easyway-export');
 
 
 require('dotenv').config();
@@ -31,6 +32,7 @@ require('dotenv').config();
 
 connectDb().then(()=>{
   logger.info("DB connection successful!");
+
   // Create new User manually
  /* const userdb = require('./userdb');
   userdb.createUser().then((res)=>{
@@ -38,6 +40,7 @@ connectDb().then(()=>{
   }).catch(err=>{
   logger.error(err);
   });*/
+
 }).catch(err=>{
   logger.error("DB connection failed: " + err)
 });
@@ -79,6 +82,7 @@ app.post('/login', async (req, res, next) => {
 
 
 app.use('/easyway', easyWay);
+app.use('/export', easywayexport)
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
 
