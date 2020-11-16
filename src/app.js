@@ -61,7 +61,6 @@ app.post('/login', async (req, res, next) => {
   logger.info('login form user: ' + req.body.username);
   try {
     const user = await User.find({username: req.body.username});
-    console.log(user);
     const match = await bcrypt.compare(req.body.password, user[0].password);
       if (match) {
         // Generate an access token
@@ -70,7 +69,7 @@ app.post('/login', async (req, res, next) => {
           role: req.body.role
         }, process.env.TOKEN_SECRET, { expiresIn: process.env.TOKEN_EXPIRES_IN });
         res.status(200).json({
-          accessToken
+          accessToken, user
         });
       } else {
         res.status(401).send(new Error("Wrong password or username"));

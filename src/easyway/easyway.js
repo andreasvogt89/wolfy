@@ -1,5 +1,4 @@
 const express = require('express');
-const mongodb = require('mongodb');
 const logger = require('../serverlog/logger')
 const router = express.Router();
 const { Event, Person, schemaName } = require('../mongodb');

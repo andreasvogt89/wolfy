@@ -22,7 +22,7 @@ try {
   const httpsServer = https.createServer(credentials,app);
   httpsServer.listen(httpsPort, () => {
     /* eslint-disable no-console */
-    logger.info(`Listening: http://localhost:${httpsPort}`);
+    logger.info(`Listening: https://localhost:${httpsPort}`);
     /* eslint-enable no-console */
   });
 } catch (e) {
