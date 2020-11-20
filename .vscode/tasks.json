@@ -23,7 +23,7 @@
 		},
 		{
 			"type": "docker-run",
-			"label": "docker-run: debug",
+			"label": "docker-run: startAndBuild",
 			"dependsOn": [
 				"docker-build"
 			],
