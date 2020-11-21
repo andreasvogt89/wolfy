@@ -4,7 +4,7 @@
             "name": "Docker Node.js Launch",
             "type": "docker",
             "request": "launch",
-            "preLaunchTask": "startAndBuild",
+            "preLaunchTask": "docker-run: startAndBuild",
             "platform": "node"
         }
     ]
