@@ -34,15 +34,15 @@ connectDb().then(()=>{
   logger.info("DB connection successful!");
 
   // Create new User manually
- const userdb = require('./userdb');
-  userdb.createUser().then((res)=>{
-  logger.info(res);
-  }).catch(err=>{
-  logger.error(err);
-  });
+//  const userdb = require('./userdb');
+//   userdb.createUser().then((res)=>{
+//   logger.info(res);
+//   }).catch(err=>{
+//   logger.error(err);
+//   });
 
-}).catch(err=>{
-  logger.error("DB connection failed: " + err)
+ }).catch(err=>{
+ logger.error("DB connection failed: " + err)
 });
 
 

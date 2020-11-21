@@ -8,8 +8,8 @@ try {
     ADMIN: "Admin"
   }
   const user = {
-    username: "Jugendarbeit",
-    password: await bcrypt.hash("Jala4513", 10),
+    username: "Andreas",
+    password: await bcrypt.hash("4556@A89xy$$", 10),
     role: roles.ADMIN
   }
   logger.info(`Create user: ${JSON.stringify(user)}`);
