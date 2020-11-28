@@ -60,7 +60,6 @@ app.post('/login', async(req, res, next) => {
         " as: " + req.body.username);
     try {
         const user = await User.find({ username: req.body.username });
-        console.log(user);
         if (user.length !== 0) {
             const match = await bcrypt.compare(req.body.password, user[0].password);
             if (match) {
