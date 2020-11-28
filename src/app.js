@@ -23,26 +23,26 @@ app.use(express.json());
 
 
 app.get('/', (req, res) => {
-  res.json({
-    message: 'Server is running 💩'
-  });
+    res.json({
+        message: 'Server is running 💩'
+    });
 });
 
 require('dotenv').config();
 
-connectDb().then(()=>{
-  logger.info("DB connection successful!");
+connectDb().then(() => {
+    logger.info("DB connection successful!");
 
-  // Create new User manually
-//  const userdb = require('./userdb');
-//   userdb.createUser().then((res)=>{
-//   logger.info(res);
-//   }).catch(err=>{
-//   logger.error(err);
-//   });
+    // Create new User manually
+    //  const userdb = require('./userdb');
+    //   userdb.createUser().then((res)=>{
+    //   logger.info(res);
+    //   }).catch(err=>{
+    //   logger.error(err);
+    //   });
 
- }).catch(err=>{
- logger.error("DB connection failed: " + err)
+}).catch(err => {
+    logger.error("DB connection failed: " + err)
 });
 
 
@@ -54,32 +54,36 @@ connectDb().then(()=>{
   }).catch(e=> {
   console.log(e);
 });*/
-
-
-app.post('/login', async (req, res, next) => {
-  // Read username and password from request body
-  logger.info('login form user: ' + req.body.username);
-  try {
-    const user = await User.find({username: req.body.username});
-    const match = await bcrypt.compare(req.body.password, user[0].password);
-      if (match) {
-        // Generate an access token
-        const accessToken = jwt.sign({
-          username: req.body.username,
-          role: req.body.role
-        }, process.env.TOKEN_SECRET, { expiresIn: process.env.TOKEN_EXPIRES_IN });
-        res.status(200).json({
-          accessToken, user
-        });
-      } else {
-        res.status(401).send(new Error("Wrong password or username"));
-      }
-  } catch (err) {
-    logger.error('Auth failed:' + err.message);
-    next(err);
-  }
+app.post('/login', async(req, res, next) => {
+    // Read username and password from request body
+    logger.info('login from: ' + req.headers['x-forwarded-for'] +
+        " as: " + req.body.username);
+    try {
+        const user = await User.find({ username: req.body.username });
+        console.log(user);
+        if (user.length !== 0) {
+            const match = await bcrypt.compare(req.body.password, user[0].password);
+            if (match) {
+                // Generate an access token
+                const accessToken = jwt.sign({
+                    username: req.body.username,
+                    role: req.body.role
+                }, process.env.TOKEN_SECRET, { expiresIn: process.env.TOKEN_EXPIRES_IN });
+                res.status(200).json({
+                    accessToken,
+                    user
+                });
+            } else {
+                res.status(401).send({ message: "Wrong password or username" });
+            }
+        } else {
+            res.status(401).send({ message: "Wrong password or username" });
+        }
+    } catch (err) {
+        logger.error('Auth failed:' + err.message);
+        next(err);
+    }
 });
-
 
 app.use('/easyway', easyWay);
 app.use('/export', easywayexport)

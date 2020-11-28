@@ -10,30 +10,29 @@ const httpPort = process.env.HTTP_PORT || 8989
 const httpsPort = process.env.HTTPS_PORT || 4443
 
 try {
-// Certificate
-  const privateKey = fs.readFileSync(path.join(__dirname,'./cert/privkey.pem'),'utf8');
-  const certificate = fs.readFileSync(path.join(__dirname,'./cert/cert.pem'),'utf8');
-  const ca = fs.readFileSync(path.join(__dirname,'./cert/chain.pem'),'utf8');
-  const credentials = {
-    key: privateKey,
-    cert: certificate,
-    ca: ca
-  };
-  const httpsServer = https.createServer(credentials,app);
-  httpsServer.listen(httpsPort, () => {
-    /* eslint-disable no-console */
-    logger.info(`Listening: https://localhost:${httpsPort}`);
-    /* eslint-enable no-console */
-  });
+    // Certificate
+    const privateKey = fs.readFileSync(path.join(__dirname, './cert/privkey.pem'), 'utf8');
+    const certificate = fs.readFileSync(path.join(__dirname, './cert/cert.pem'), 'utf8');
+    const ca = fs.readFileSync(path.join(__dirname, './cert/chain.pem'), 'utf8');
+    const credentials = {
+        key: privateKey,
+        cert: certificate,
+        ca: ca
+    };
+    const httpsServer = https.createServer(credentials, app);
+    httpsServer.listen(httpsPort, () => {
+        /* eslint-disable no-console */
+        logger.info(`Listening: https://localhost:${httpsPort}`);
+        /* eslint-enable no-console */
+    });
 } catch (e) {
-  logger.error('can not load certificate and start https: ' + e.message);
+    logger.error('can not load certificate: ' + e.message);
+    logger.warn('Https was not started!');
 }
 
 const httpServer = http.createServer(app);
-
 httpServer.listen(httpPort, () => {
-  /* eslint-disable no-console */
-  logger.info(`Listening: http://localhost:${httpPort}`);
-  /* eslint-enable no-console */
+    /* eslint-disable no-console */
+    logger.info(`Listening: http://localhost:${httpPort}`);
+    /* eslint-enable no-console */
 });
-
