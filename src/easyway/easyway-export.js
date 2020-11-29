@@ -21,7 +21,7 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
         );
         res.setHeader(
             "Content-Disposition",
-            "attachment; filename=" + "event.xlsx"
+            "attachment; filename=" + filename + ".xlsx"
         );
         let workbook = new exceljs.Workbook();
         let worksheet = workbook.addWorksheet('event');
@@ -43,17 +43,19 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
                 { name: 'Mail', filterButton: true },
                 { name: 'Klasse', filterButton: true },
                 { name: 'Alter', filterButton: true },
+                { name: 'Geburtsdatum', filterButton: true },
                 { name: 'Kommentar', filterButton: true },
                 { name: 'Geschlecht', filterButton: true },
                 { name: 'Strasse', filterButton: true },
                 { name: 'Strassenummer', filterButton: true },
                 { name: 'Ort', filterButton: true },
-                { name: 'Postleizahl', filterButton: true},
+                { name: 'Postleizahl', filterButton: true },
             ],
             rows: [],
         });
         const eventTable = worksheet.getTable('Teilnehmer');
         persons.forEach(data => {
+            let newDate = new Date(data.person.birthdate);
             eventTable.addRow([
                 data.person.firstname,
                 data.person.lastname,
@@ -62,13 +64,14 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
                 data.person.email,
                 data.person.class,
                 data.person.age,
+                new moment(newDate).format('LL'),
                 data.person.comments,
                 data.person.gender,
                 data.person.street,
                 data.person.street_number,
                 data.person.city,
                 data.person.postcode,
-            ],0);
+            ], 0);
         });
         eventTable.commit();
         worksheet.getRows(1, 4).height = 30;
@@ -79,7 +82,7 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
                 family: 4,
             },
             worksheet.getCell('A2').value = 'In: ' + event.event.place;
-            let newDate = new Date(event.event.eventDate);
+        let newDate = new Date(event.event.eventDate);
         worksheet.getCell('A3').value = 'Am: ' + new moment(newDate).format('LL');
         worksheet.getCell('A3').numFmt = 'dd/mm/yyyy'
         worksheet.getCell('B1').value = "Kommentare:";
@@ -89,23 +92,24 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
         worksheet.getCell('D2').value = '="Personen insegsamt:       "&ZÄHLENWENN(Teilnehmer[Vorname];"*")';
         worksheet.getCell('D3').value = '="Ausgewählt:       "&TEILERGEBNIS(3;Teilnehmer[Vorname])';
         worksheet.columns = [
-            {key: 'Vorname',width:20},
-            {key: 'Nachname',width:20},
-            {key: 'Handy',width:20},
-            {key: 'Notfallnummer', width:20},
-            {key: 'Mail',width:20},
-            {key: 'Klasse',width:20},
-            {key: 'Alter',width:20},
-            {key: 'Kommentar',width:20},
-            {key: 'Geschlecht',width:20},
-            {key: 'Strasse',width:20},
-            {key: 'Strassenummer',width:20},
-            {key: 'Ort',width:20},
-            {key: 'Postleizahl',width:20},
+            { key: 'Vorname', width: 20 },
+            { key: 'Nachname', width: 20 },
+            { key: 'Handy', width: 20 },
+            { key: 'Notfallnummer', width: 20 },
+            { key: 'Mail', width: 20 },
+            { key: 'Klasse', width: 20 },
+            { key: 'Alter', width: 20 },
+            { key: 'Geburtsdatum', width: 20 },
+            { key: 'Kommentar', width: 20 },
+            { key: 'Geschlecht', width: 20 },
+            { key: 'Strasse', width: 20 },
+            { key: 'Strassenummer', width: 20 },
+            { key: 'Ort', width: 20 },
+            { key: 'Postleizahl', width: 20 },
         ];
-        await workbook.xlsx.writeFile("./exports/event.xlsx").then(function() {
+        await workbook.xlsx.writeFile('./exports/' + filename + 'event.xlsx').then(function() {
             logger.info('Excel file saved');
-            res.download(path.join(__dirname, '../../exports/event.xlsx'));
+            res.download(path.join(__dirname, '../../exports/' + filename + 'event.xlsx'));
         });
     } catch (err) {
         logger.error(`Can't load collection: ${req.params.id} cause: ${err}`)
