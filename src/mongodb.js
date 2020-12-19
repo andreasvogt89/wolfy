@@ -72,7 +72,7 @@ const personSchema = new mongoose.Schema({
         age: {
             type: Number,
         },
-        bithdate: {
+        birthdate: {
             type: Date,
         },
         street: {
