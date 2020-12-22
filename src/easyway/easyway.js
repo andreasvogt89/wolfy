@@ -97,7 +97,7 @@ async function recalCalculateAge() {
     asyncForEach(persons, async(personItem) => {
         let ageDifMs = Date.now() - new Date(personItem.person.birthdate).getTime();
         let ageDate = new Date(ageDifMs);
-        personItem.person.birthdate = Math.abs(ageDate.getUTCFullYear() - 1970);
+        personItem.person.age = Math.abs(ageDate.getUTCFullYear() - 1970);
         await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
     });
 }
