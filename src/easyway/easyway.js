@@ -92,14 +92,14 @@ async function deleteDependendItems(id, model) {
     let persons = await personModel.find({});
     persons.forEach(personItem => {
       personItem.event = personItem.event.filter(item => item._id !== id);
-      await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
+      personModel.updateOne({ _id: personItem._id }, { $set: personItem });
     });
   } else {
     const eventModel = getMongooseModel(schemaName.EVENT);
     let events = await eventModel.find({});
     events.forEach(eventItem => {
       eventItem.event.participants.splice(eventItem.event.participants.indexOf(id), 1);
-      await eventModel.updateOne({ _id: eventItem._id }, { $set: eventItem });
+      eventModel.updateOne({ _id: eventItem._id }, { $set: eventItem });
     });
   }
 }
@@ -114,7 +114,7 @@ async function refreshEventsDB(person) {
       } else if (element.event.participants.includes(person._id)) {
         element.event.participants.splice(element.event.participants.indexOf(person._id), 1);
       }
-      await model.updateOne({ _id: element._id }, { $set: element });
+      eventModel.updateOne({ _id: element._id }, { $set: element });
     });
   } catch (error) {
      logger.error("Event refreshing crashed: " + error) 
