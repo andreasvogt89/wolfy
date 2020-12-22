@@ -88,18 +88,18 @@ function getMongooseModel(modelName) {
 async function deleteDependendItems(id, model) {
   //get de inverse collection to delete the depencies
   if (model === schemaName.EVENT) {
-    const model = getMongooseModel(schemaName.PERSON);
-    let persons = await model.find({});
+    const personModel = getMongooseModel(schemaName.PERSON);
+    let persons = await personModel.find({});
     persons.forEach(personItem => {
       personItem.event = personItem.event.filter(item => item._id !== id);
-      await model.updateOne({ _id: personItem._id }, { $set: personItem });
+      await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
     });
   } else {
-    const model = getMongooseModel(schemaName.EVENT);
-    let events = await model.find({});
+    const eventModel = getMongooseModel(schemaName.EVENT);
+    let events = await eventModel.find({});
     events.forEach(eventItem => {
       eventItem.event.participants.splice(eventItem.event.participants.indexOf(id), 1);
-      await model.updateOne({ _id: eventItem._id }, { $set: eventItem });
+      await eventModel.updateOne({ _id: eventItem._id }, { $set: eventItem });
     });
   }
 }
@@ -117,7 +117,7 @@ async function refreshEventsDB(person) {
       await model.updateOne({ _id: element._id }, { $set: element });
     });
   } catch (error) {
-
+     logger.error("Event refreshing crashed: " + error) 
   }
 
 }
