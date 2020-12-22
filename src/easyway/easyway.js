@@ -29,6 +29,9 @@ router.post('/add', authenticateToken, async (req, res, next) => {
   try {
     const model = getMongooseModel(req.headers.collection);
     await model.create(req.body);
+    if (req.headers.collection === schemaName.PERSON) {
+      await refreshEventsDB(req.body);
+    }
     res.status(201).send();
   } catch (err) {
     logger.error('add to db failed: ' + err.message);
@@ -36,11 +39,11 @@ router.post('/add', authenticateToken, async (req, res, next) => {
   }
 });
 
-//TODO Change not finished
+
 /**
  * Change data in DB
  * Body = Object only with changed properties
- * Headers = {collection = "", type = ""}
+ * Headers = {collection = ""}
  */
 router.put('/change/:id', authenticateToken, async (req, res, next) => {
   logger.info(`change in ${req.headers.collection} this -> ${req.params.id}`);
@@ -48,7 +51,7 @@ router.put('/change/:id', authenticateToken, async (req, res, next) => {
     const model = getMongooseModel(req.headers.collection);
     await model.updateOne({ _id: req.params.id }, { $set: req.body });
     if (req.headers.collection === schemaName.PERSON) {
-      refreshEventsDB(req.body);
+      await refreshEventsDB(req.body);
     }
     res.status(200).send();
   } catch (err) {
@@ -66,7 +69,7 @@ router.delete('/delete/:id', authenticateToken, async (req, res, next) => {
   try {
     const model = getMongooseModel(req.headers.collection);
     await model.deleteOne({ _id: req.params.id });
-    deleteDependendItems(req.params.id, req.headers.collection);
+    await deleteDependendItems(req.params.id, req.headers.collection);
     res.status(200).send();
   } catch (err) {
     logger.error("Delete object failed: " + err.message);
@@ -82,7 +85,7 @@ function getMongooseModel(modelName) {
   }
 }
 
-function deleteDependendItems(id, model) {
+async function deleteDependendItems(id, model) {
   //get de inverse collection to delete the depencies
   if (model === schemaName.EVENT) {
     const model = getMongooseModel(schemaName.PERSON);
@@ -101,7 +104,7 @@ function deleteDependendItems(id, model) {
   }
 }
 
-function refreshEventsDB(person) {
+async function refreshEventsDB(person) {
   try {
     const eventModel = getMongooseModel(schemaName.EVENT);
     let events = await model.find({});
