@@ -107,7 +107,7 @@ async function deleteDependendItems(id, model) {
 async function refreshEventsDB(person) {
   try {
     const eventModel = getMongooseModel(schemaName.EVENT);
-    let events = await model.find({});
+    let events = await eventModel.find({});
     events.forEach(element => {
       if (person.event.includes(element._id) && !element.event.participants.includes(person._id)) {
         element.event.participants.push(person._id);
