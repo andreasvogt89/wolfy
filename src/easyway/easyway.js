@@ -12,6 +12,8 @@ const { asyncForEach } = require('../utils/functions');
 router.get('/collection', authenticateToken, async(req, res, next) => {
     logger.info('fetch all ' + req.headers.collection + ' from db');
     try {
+        //perhabs this could be done less often
+        await recalCalculateAge();
         const model = getMongooseModel(req.headers.collection);
         res.send(await model.find({}));
     } catch (err) {
@@ -89,13 +91,24 @@ function getMongooseModel(modelName) {
     }
 }
 
+async function recalCalculateAge() {
+    const personModel = getMongooseModel(schemaName.PERSON);
+    let persons = await personModel.find({});
+    asyncForEach(persons, async(personItem) => {
+        let ageDifMs = Date.now() - new Date(personItem.person.birthdate).getTime();
+        let ageDate = new Date(ageDifMs);
+        personItem.person.birthdate = Math.abs(ageDate.getUTCFullYear() - 1970);
+        await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
+    });
+}
+
+
 async function deleteDependendItems(id, model) {
     //get de inverse collection to delete the depencies
     try {
         if (model === schemaName.EVENT) {
             const personModel = getMongooseModel(schemaName.PERSON);
             let persons = await personModel.find({});
-            console.log(persons)
             asyncForEach(persons, async(personItem) => {
                 personItem.person.event = personItem.person.event.filter(item => item._id !== id);
                 await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
