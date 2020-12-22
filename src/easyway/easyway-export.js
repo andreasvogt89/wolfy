@@ -14,7 +14,7 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
             ['person.event']: req.params.id
         });
         const event = await Event.findOne({ _id: req.params.id });
-        const filename = event.event.name + "_" + new Date().toDateString();
+        const filename = event.event.name + "_" + event.event.eventDate;
         res.setHeader(
             "Content-Type",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -107,7 +107,7 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
             { key: 'Ort', width: 20 },
             { key: 'Postleizahl', width: 20 },
         ];
-        await workbook.xlsx.writeFile('./exports/' + filename + 'event.xlsx').then(function() {
+        await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(function() {
             logger.info('Excel file saved');
             res.download(path.join(__dirname, '../../exports/' + filename + 'event.xlsx'));
         });
