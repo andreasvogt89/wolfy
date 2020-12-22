@@ -104,15 +104,15 @@ async function deleteDependendItems(id, model) {
   }
 }
 
-async function refreshEventsDB(person) {
+async function refreshEventsDB(body) {
   try {
     const eventModel = getMongooseModel(schemaName.EVENT);
     let events = await eventModel.find({});
     events.forEach(element => {
-      if (person.event.includes(element._id) && !element.event.participants.includes(person._id)) {
-        element.event.participants.push(person._id);
-      } else if (element.event.participants.includes(person._id)) {
-        element.event.participants.splice(element.event.participants.indexOf(person._id), 1);
+      if (body.person.event.includes(element._id) && !element.event.participants.includes(person._id)) {
+        element.event.participants.push(body.person._id);
+      } else if (element.event.participants.includes(body.person._id)) {
+        element.event.participants.splice(element.event.participants.indexOf(body.person._id), 1);
       }
       eventModel.updateOne({ _id: element._id }, { $set: element });
     });
