@@ -11,10 +11,9 @@ const { data } = require('../serverlog/logger');
 router.get('/excel/:id', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for event: ${req.params.id}`);
     try {
-        const persons = await Person.find({
-            ['person.event']: req.params.id
-        });
-        const event = await Event.findOne({ _id: req.params.id });
+        let personData = await Person.find({});
+        let persons = personData.filter(personItem => isIncluded(req.params.id,personItem.person.event));
+        let event = await Event.findOne({ _id: req.params.id });
         const filename = req.headers.filename
         res.setHeader(
             "Content-Type",
@@ -90,8 +89,7 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
         worksheet.mergeCells('B2:C4');
         worksheet.getCell('C2').value = event.event.comments;
         console.log('table created!');
-        worksheet.getCell('D2').value = '="Personen insegsamt:       ' + data.length;
-        worksheet.getCell('D3').value = '="Ausgewählt:       "&TEILERGEBNIS(3;Teilnehmer[Vorname])';
+        worksheet.getCell('D2').value = 'Personen insegsamt:       ' + persons.length;
         worksheet.columns = [
             { key: 'Vorname', width: 20 },
             { key: 'Nachname', width: 20 },
@@ -110,12 +108,22 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
         ];
         await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(function() {
             logger.info('Excel file saved');
-            res.download(path.join(__dirname, '../../exports/' + filename + 'event.xlsx'));
+            res.download(path.join(__dirname, '../../exports/' + filename + '.xlsx'));
         });
     } catch (err) {
         logger.error(`Can't load collection: ${req.params.id} cause: ${err}`)
         next(err);
     }
 });
+
+function isIncluded(id, personEvents) {
+    let answer = false;
+    personEvents.forEach(item => {
+        if (item._id == id) {
+            answer = true;
+        }
+    });
+    return answer;
+}
 
 module.exports = router;
