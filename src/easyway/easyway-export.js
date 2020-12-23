@@ -14,7 +14,7 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
             ['person.event']: req.params.id
         });
         const event = await Event.findOne({ _id: req.params.id });
-        const filename = event.event.name + "_" + event.event.eventDate;
+        const filename = req.body.name
         res.setHeader(
             "Content-Type",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
