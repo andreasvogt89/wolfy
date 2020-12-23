@@ -6,6 +6,7 @@ const exceljs = require('exceljs');
 const { authenticateToken } = require('../auth');
 const { Event, Person } = require('../mongodb');
 const moment = require('moment');
+const { data } = require('../serverlog/logger');
 
 router.get('/excel/:id', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for event: ${req.params.id}`);
@@ -89,7 +90,7 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
         worksheet.mergeCells('B2:C4');
         worksheet.getCell('C2').value = event.event.comments;
         console.log('table created!');
-        worksheet.getCell('D2').value = '="Personen insegsamt:       "&ZÄHLENWENN(Teilnehmer[Vorname];"*")';
+        worksheet.getCell('D2').value = '="Personen insegsamt:       ' + data.length;
         worksheet.getCell('D3').value = '="Ausgewählt:       "&TEILERGEBNIS(3;Teilnehmer[Vorname])';
         worksheet.columns = [
             { key: 'Vorname', width: 20 },

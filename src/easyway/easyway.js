@@ -95,10 +95,12 @@ async function recalCalculateAge() {
     const personModel = getMongooseModel(schemaName.PERSON);
     let persons = await personModel.find({});
     asyncForEach(persons, async(personItem) => {
-        let ageDifMs = Date.now() - new Date(personItem.person.birthdate).getTime();
-        let ageDate = new Date(ageDifMs);
-        personItem.person.age = Math.abs(ageDate.getUTCFullYear() - 1970);
-        await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
+        if (personItem.person.firstname !== "#DUMMY") {
+            let ageDifMs = Date.now() - new Date(personItem.person.birthdate).getTime();
+            let ageDate = new Date(ageDifMs);
+            personItem.person.age = Math.abs(ageDate.getUTCFullYear() - 1970);
+            await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
+        }
     });
 }
 
