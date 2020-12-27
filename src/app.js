@@ -58,19 +58,23 @@ app.post('/login', async(req, res, next) => {
     // Read username and password from request body
     logger.info('login from: ' + req.headers['x-forwarded-for'] +
         " as: " + req.body.username);
+    let  timeStamp = new Date()
+    timeStamp.setHours(timeStamp.getHours() + 24)
     try {
         const user = await User.find({ username: req.body.username });
         if (user.length !== 0) {
             const match = await bcrypt.compare(req.body.password, user[0].password);
             if (match) {
                 // Generate an access token
+                let expiresIn = 3600 * 3;
                 const accessToken = jwt.sign({
                     username: req.body.username,
-                    role: req.body.role
-                }, process.env.TOKEN_SECRET, { expiresIn: process.env.TOKEN_EXPIRES_IN });
+                    role: req.body.role,
+                }, process.env.TOKEN_SECRET, { expiresIn: '3h'});
                 res.status(200).json({
                     accessToken,
-                    user
+                    user,
+                    expiresIn
                 });
             } else {
                 res.status(401).send({ message: "Wrong password or username" });

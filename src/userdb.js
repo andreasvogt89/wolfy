@@ -1,13 +1,13 @@
 const { User } = require('./mongodb');
 const bcrypt = require('bcrypt');
 const logger = require('./serverlog/logger');
+const roles = {
+    ADMIN: "Admin",
+    USER: "User"
+}
 
 async function createUser() {
-    try {
-        const roles = {
-            ADMIN: "Admin",
-            USER: "User"
-        }
+    try {        
         const user = {
             username: "Jugendarbeit",
             password: await bcrypt.hash("Jala4513", 10),
@@ -21,5 +21,6 @@ async function createUser() {
     }
 }
 module.exports = {
-    createUser
+    createUser,
+    roles,
 }

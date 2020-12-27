@@ -6,8 +6,8 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const httpPort = process.env.HTTP_PORT || 8989
-const httpsPort = process.env.HTTPS_PORT || 4443
+const httpPort = process.env.HTTP_PORT
+const httpsPort = process.env.HTTPS_PORT
 
 try {
     // Certificate
