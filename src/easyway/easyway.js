@@ -117,7 +117,7 @@ async function deleteDependendItems(id, model) {
             const personModel = getMongooseModel(schemaName.PERSON);
             let persons = await personModel.find({});
             asyncForEach(persons, async (personItem) => {
-                if(personItem.person.firstname === '#DUMMY' && personItem.person.length === 0){
+                if(personItem.person.firstname === '#DUMMY' && personItem.person.event.length === 0){
                     await personModel.deleteOne({ _id: personItem._id });
                 } else {
                     personItem.person.event = personItem.person.event.filter(item => item._id !== id);

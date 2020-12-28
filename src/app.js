@@ -66,7 +66,8 @@ app.post('/login', async(req, res, next) => {
             const match = await bcrypt.compare(req.body.password, user[0].password);
             if (match) {
                 // Generate an access token
-                let expiresIn = 3600 * 3;
+                let now = new Date();
+                let expiresAt = now.setHours( now.getHours() + 3 );
                 const accessToken = jwt.sign({
                     username: user[0].username,
                     role: user[0].role
@@ -74,7 +75,7 @@ app.post('/login', async(req, res, next) => {
                 res.status(200).json({
                     accessToken,
                     user,
-                    expiresIn
+                    expiresAt,
                 });
             } else {
                 res.status(401).send({ message: "Wrong password or username" });
