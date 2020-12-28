@@ -74,7 +74,7 @@ router.put('/change/:id', authenticateToken, async (req, res, next) => {
 router.delete('/delete/:id', authenticateToken, async (req, res, next) => {
     logger.info(`delete in collection ${req.headers.collection} this -> ${req.params.id}`);
     try {
-        if (req.user.roles === roles.ADMIN) {
+        if (req.user.role === roles.ADMIN) {
             const model = getMongooseModel(req.headers.collection);
             await model.deleteOne({ _id: req.params.id });
             await deleteDependendItems(req.params.id, req.headers.collection);
@@ -117,8 +117,12 @@ async function deleteDependendItems(id, model) {
             const personModel = getMongooseModel(schemaName.PERSON);
             let persons = await personModel.find({});
             asyncForEach(persons, async (personItem) => {
-                personItem.person.event = personItem.person.event.filter(item => item._id !== id);
-                await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
+                if(personItem.person.firstname === '#DUMMY' && personItem.person.length === 0){
+                    await personModel.deleteOne({ _id: personItem._id });
+                } else {
+                    personItem.person.event = personItem.person.event.filter(item => item._id !== id);
+                    await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
+                }
             });
         } else {
             const eventModel = getMongooseModel(schemaName.EVENT);

@@ -10,7 +10,6 @@ function authenticateToken(req, res, next) {
       if (err) {
          return res.status(403).send(err);
       }
-      console.log("JWT User: " + JSON.stringify(user));
       req.user = user;
       next();
     });

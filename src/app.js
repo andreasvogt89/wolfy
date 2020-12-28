@@ -68,8 +68,8 @@ app.post('/login', async(req, res, next) => {
                 // Generate an access token
                 let expiresIn = 3600 * 3;
                 const accessToken = jwt.sign({
-                    username: req.body.username,
-                    role: req.body.role,
+                    username: user[0].username,
+                    role: user[0].role
                 }, process.env.TOKEN_SECRET, { expiresIn: '3h'});
                 res.status(200).json({
                     accessToken,
