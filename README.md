@@ -1,4 +1,4 @@
-# Express API Starter
+# Backend of Easy Way APP
 
 Includes API Server utilities:
 
