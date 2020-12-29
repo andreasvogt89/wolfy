@@ -40,7 +40,6 @@ const eventSchema = new mongoose.Schema({
         name: {
             type: String,
             required: true,
-            unique: true,
         },
         eventDate: {
             type: Date,
@@ -48,7 +47,6 @@ const eventSchema = new mongoose.Schema({
         },
         place: {
             type: String,
-            required: true,
         },
         participants: {
             type: Array,
