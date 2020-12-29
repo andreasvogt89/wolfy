@@ -116,7 +116,7 @@ router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
 
 
 
-router.get('/excel/persons', authenticateToken, async(req, res, next) => {
+router.post('/excel/persons', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for all persons`);
     try {
         const filename = req.headers.filename
