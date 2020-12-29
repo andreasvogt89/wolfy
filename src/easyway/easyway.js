@@ -119,10 +119,10 @@ async function deleteDependendItems(id, model) {
             asyncForEach(persons, async (personItem) => {
                 if(personItem.person.firstname === '#DUMMY' && personItem.person.event.length === 0){
                     await personModel.deleteOne({ _id: personItem._id });
-                } else {
-                    personItem.person.event = personItem.person.event.filter(item => item._id !== id);
-                    await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
-                }
+                } 
+                personItem.person.event = personItem.person.event.filter(item => item._id !== id);
+                await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
+                
             });
         } else {
             const eventModel = getMongooseModel(schemaName.EVENT);

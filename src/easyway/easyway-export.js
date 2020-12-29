@@ -6,7 +6,6 @@ const exceljs = require('exceljs');
 const { authenticateToken } = require('../auth');
 const { Event, Person } = require('../mongodb');
 const moment = require('moment');
-const { roles } = require('../userdb');
 moment.locale('de-ch');
 
 router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
@@ -115,15 +114,7 @@ router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
     }
 });
 
-function isIncluded(id, personEvents) {
-    let answer = false;
-    personEvents.forEach(item => {
-        if (item._id == id) {
-            answer = true;
-        }
-    });
-    return answer;
-}
+
 
 router.get('/excel/persons', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for all persons`);
@@ -137,9 +128,11 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
             "Content-Disposition",
             "attachment; filename=" + filename + ".xlsx"
         );
-        let persons = await Person.find({});
-        let events = await Event.find({});
-        let _columns = [
+        let personData = await Person.find({});
+        let eventData = await Event.find({});
+        let events = eventData.filter(item => req.body.eventNames.includes(item.event.name));
+        let persons = personData.filter(item => isIncluded(item._id, events));
+        let _columnsPersons = [
             { name: 'Vorname', filterButton: true },
             { name: 'Nachname', filterButton: true },
             { name: 'Handy', filterButton: true },
@@ -156,14 +149,14 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
             { name: 'Postleizahl', filterButton: true },
         ];
         events.forEach(item=>{
-            _columns.push({
-                name: item.event.eventName,
+            _columnsPersons.push({
+                name: item.event.name,
                 filterButton: true,
                 });    
         });
         let workbook = new exceljs.Workbook();
-        let worksheet = workbook.addWorksheet('event');
-        worksheet.addTable({
+        let worksheetPersons = workbook.addWorksheet('Personen');
+        worksheetPersons.addTable({
             name: 'Persons',
             ref: 'A5',
             headerRow: true,
@@ -172,10 +165,10 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
                 theme: 'TableStyleDark4',
                 showRowStripes: true,
             },
-            columns: _columns,
+            columns: _columnsPersons,
             rows: [],
         });
-        const personTable = worksheet.getTable('Persons');
+        const personTable = worksheetPersons.getTable('Persons');
         persons.forEach(data => {
             let newDate = new Date(data.person.birthdate);
             let row = [
@@ -195,7 +188,7 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
                 data.person.postcode,
             ];
             events.forEach(item=>{
-                if(data.person.event.includes(item._id)){
+                if(isIncluded(item._id,data.person.event)){
                     row.push("Ja");
                 } else {
                     row.push("Nein")
@@ -204,14 +197,56 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
             personTable.addRow(row, 0);
         });
         personTable.commit();
-        worksheet.getRows(1, 4).height = 30;
-        worksheet.getCell('A1').value = "Alle Personen";
-        worksheet.getCell('A1').font = {
+        worksheetPersons.getRows(1, 4).height = 30;
+        worksheetPersons.getCell('A1').value = "Personen";
+        worksheetPersons.getCell('A1').font = {
                 size: 18,
                 bold: true,
                 family: 4,
             },
-        worksheet.getCell('D2').value = 'Personen insegsamt:       ' + persons.length;
+        worksheetPersons.getCell('D2').value = 'Personen insgesamt:       ' + persons.length;
+        
+        //worksheet Events
+        let worksheetEvents = workbook.addWorksheet('Events');
+        worksheetEvents.addTable({
+            name: 'Events',
+            ref: 'A5',
+            headerRow: true,
+            totalsRow: false,
+            style: {
+                theme: 'TableStyleDark5',
+                showRowStripes: true,
+            },
+            columns: [
+                { name: 'Name', filterButton: true },
+                { name: 'Datum', filterButton: true },
+                { name: 'Wo', filterButton: true },
+                { name: 'Kommentar', filterButton: true },
+                { name: 'Anzahl Personen', filterButton: true },
+            ],
+            rows: [],
+        });
+        const eventTable = worksheetEvents.getTable('Events');
+        events.forEach(data => {
+            let newDate = new Date(data.event.eventDate);
+            let row = [
+                data.event.name,
+                new moment(newDate).format('LL'),
+                data.person.place,
+                data.person.comments,
+                data.person.participants.length,
+            ];
+            eventTable.addRow(row, 0);
+        });
+        eventTable.commit();
+        worksheetEvents.getRows(1, 4).height = 30;
+        worksheetEvents.getCell('A1').value = "Events";
+        worksheetEvents.getCell('A1').font = {
+                size: 18,
+                bold: true,
+                family: 4,
+            },
+        worksheetEvents.getCell('D2').value = 'Events insgesamt:       ' + events.length;
         await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(function() {
             logger.info('Excel file saved');
             res.download(path.join(__dirname, '../../exports/' + filename + '.xlsx'));
