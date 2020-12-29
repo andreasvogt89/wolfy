@@ -131,7 +131,7 @@ router.post('/excel/persons', authenticateToken, async(req, res, next) => {
         let personData = await Person.find({});
         let eventData = await Event.find({});
         let events = eventData.filter(item => req.body.eventNames.includes(item.event.name));
-        let persons = personData.filter(item => isIncluded(item._id, events));
+        let persons = personData.filter(item => isInEventIncluded(item._id, events));
         let _columnsPersons = [
             { name: 'Vorname', filterButton: true },
             { name: 'Nachname', filterButton: true },
@@ -247,6 +247,8 @@ router.post('/excel/persons', authenticateToken, async(req, res, next) => {
                 family: 4,
             },
         worksheetEvents.getCell('D2').value = 'Events insgesamt:       ' + events.length;
+
+        
         await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(function() {
             logger.info('Excel file saved');
             res.download(path.join(__dirname, '../../exports/' + filename + '.xlsx'));
@@ -260,6 +262,16 @@ router.post('/excel/persons', authenticateToken, async(req, res, next) => {
 function isIncluded(id, personEvents) {
     let answer = false;
     personEvents.forEach(item => {
+        if (item._id == id) {
+            answer = true;
+        }
+    });
+    return answer;
+}
+
+function isInEventIncluded(id, events) {
+    let answer = false;
+    events.forEach(item => {
         if (item._id == id) {
             answer = true;
         }
