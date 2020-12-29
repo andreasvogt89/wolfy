@@ -12,7 +12,7 @@ router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for event: ${req.params.id}`);
     try {
         let personData = await Person.find({});
-        let persons = personData.filter(personItem => isIncluded(req.params.id,personItem.person.event));
+        let persons = personData.filter(personItem => isIncluded(req.params.id, personItem.person.event));
         let event = await Event.findOne({ _id: req.params.id });
         const filename = req.headers.filename
         res.setHeader(
@@ -131,7 +131,7 @@ router.post('/excel/persons', authenticateToken, async(req, res, next) => {
         let personData = await Person.find({});
         let eventData = await Event.find({});
         let events = eventData.filter(item => req.body.eventNames.includes(item.event.name));
-        let persons = personData.filter(item => isInEventIncluded(item._id, events));
+        let persons = personData.filter(person => isInEventIncluded(person._id, events));
         let _columnsPersons = [
             { name: 'Vorname', filterButton: true },
             { name: 'Nachname', filterButton: true },
@@ -148,11 +148,11 @@ router.post('/excel/persons', authenticateToken, async(req, res, next) => {
             { name: 'Ort', filterButton: true },
             { name: 'Postleizahl', filterButton: true },
         ];
-        events.forEach(item=>{
+        events.forEach(item => {
             _columnsPersons.push({
                 name: item.event.name,
                 filterButton: true,
-                });    
+            });
         });
         let workbook = new exceljs.Workbook();
         let worksheetPersons = workbook.addWorksheet('Personen');
@@ -187,8 +187,8 @@ router.post('/excel/persons', authenticateToken, async(req, res, next) => {
                 data.person.city,
                 data.person.postcode,
             ];
-            events.forEach(item=>{
-                if(isIncluded(item._id,data.person.event)){
+            events.forEach(item => {
+                if (isIncluded(item._id, data.person.event)) {
                     row.push("Ja");
                 } else {
                     row.push("Nein")
@@ -204,8 +204,8 @@ router.post('/excel/persons', authenticateToken, async(req, res, next) => {
                 bold: true,
                 family: 4,
             },
-        worksheetPersons.getCell('D2').value = 'Personen insgesamt:       ' + persons.length;
-        
+            worksheetPersons.getCell('D2').value = 'Personen insgesamt:       ' + persons.length;
+
         //worksheet Events
         let worksheetEvents = workbook.addWorksheet('Events');
         worksheetEvents.addTable({
@@ -246,9 +246,9 @@ router.post('/excel/persons', authenticateToken, async(req, res, next) => {
                 bold: true,
                 family: 4,
             },
-        worksheetEvents.getCell('D2').value = 'Events insgesamt:       ' + events.length;
+            worksheetEvents.getCell('D2').value = 'Events insgesamt:       ' + events.length;
 
-        
+
         await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(function() {
             logger.info('Excel file saved');
             res.download(path.join(__dirname, '../../exports/' + filename + '.xlsx'));
@@ -269,14 +269,16 @@ function isIncluded(id, personEvents) {
     return answer;
 }
 
-function isInEventIncluded(id, events) {
+function isInEventIncluded(personID, events) {
     let answer = false;
     events.forEach(item => {
-        if (item._id == id) {
+        if (item.event.participants.includes(personID)) {
             answer = true;
         }
     });
     return answer;
 }
+
+
 
 module.exports = router;
