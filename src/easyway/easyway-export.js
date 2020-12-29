@@ -6,9 +6,10 @@ const exceljs = require('exceljs');
 const { authenticateToken } = require('../auth');
 const { Event, Person } = require('../mongodb');
 const moment = require('moment');
-const { data } = require('../serverlog/logger');
+const { roles } = require('../userdb');
+moment.locale('de-ch');
 
-router.get('/excel/:id', authenticateToken, async(req, res, next) => {
+router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for event: ${req.params.id}`);
     try {
         let personData = await Person.find({});
@@ -84,11 +85,9 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
             worksheet.getCell('A2').value = 'In: ' + event.event.place;
         let newDate = new Date(event.event.eventDate);
         worksheet.getCell('A3').value = 'Am: ' + new moment(newDate).format('LL');
-        worksheet.getCell('A3').numFmt = 'dd/mm/yyyy'
         worksheet.getCell('B1').value = "Kommentare:";
         worksheet.mergeCells('B2:C4');
         worksheet.getCell('C2').value = event.event.comments;
-        console.log('table created!');
         worksheet.getCell('D2').value = 'Personen insegsamt:       ' + persons.length;
         worksheet.columns = [
             { key: 'Vorname', width: 20 },
@@ -106,6 +105,113 @@ router.get('/excel/:id', authenticateToken, async(req, res, next) => {
             { key: 'Ort', width: 20 },
             { key: 'Postleizahl', width: 20 },
         ];
+        await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(function() {
+            logger.info('Excel file saved');
+            res.download(path.join(__dirname, '../../exports/' + filename + '.xlsx'));
+        });
+    } catch (err) {
+        logger.error(`Can't load collection: ${req.params.id} cause: ${err}`)
+        next(err);
+    }
+});
+
+function isIncluded(id, personEvents) {
+    let answer = false;
+    personEvents.forEach(item => {
+        if (item._id == id) {
+            answer = true;
+        }
+    });
+    return answer;
+}
+
+router.get('/excel/persons', authenticateToken, async(req, res, next) => {
+    logger.info(`get excel for all persons`);
+    try {
+        const filename = req.headers.filename
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        res.setHeader(
+            "Content-Disposition",
+            "attachment; filename=" + filename + ".xlsx"
+        );
+        let persons = await Person.find({});
+        let events = await Event.find({});
+        let _columns = [
+            { name: 'Vorname', filterButton: true },
+            { name: 'Nachname', filterButton: true },
+            { name: 'Handy', filterButton: true },
+            { name: 'Notfallnummer', filterButton: true },
+            { name: 'Mail', filterButton: true },
+            { name: 'Klasse', filterButton: true },
+            { name: 'Alter', filterButton: true },
+            { name: 'Geburtsdatum', filterButton: true },
+            { name: 'Kommentar', filterButton: true },
+            { name: 'Geschlecht', filterButton: true },
+            { name: 'Strasse', filterButton: true },
+            { name: 'Strassenummer', filterButton: true },
+            { name: 'Ort', filterButton: true },
+            { name: 'Postleizahl', filterButton: true },
+        ];
+        events.forEach(item=>{
+            _columns.push({
+                name: item.event.eventName,
+                filterButton: true,
+                });    
+        });
+        let workbook = new exceljs.Workbook();
+        let worksheet = workbook.addWorksheet('event');
+        worksheet.addTable({
+            name: 'Persons',
+            ref: 'A5',
+            headerRow: true,
+            totalsRow: false,
+            style: {
+                theme: 'TableStyleDark4',
+                showRowStripes: true,
+            },
+            columns: _columns,
+            rows: [],
+        });
+        const personTable = worksheet.getTable('Persons');
+        persons.forEach(data => {
+            let newDate = new Date(data.person.birthdate);
+            let row = [
+                data.person.firstname,
+                data.person.lastname,
+                data.person.phone,
+                data.person.emergency_phone,
+                data.person.email,
+                data.person.class,
+                data.person.age,
+                new moment(newDate).format('LL'),
+                data.person.comments,
+                data.person.gender,
+                data.person.street,
+                data.person.street_number,
+                data.person.city,
+                data.person.postcode,
+            ];
+            events.forEach(item=>{
+                if(data.person.event.includes(item._id)){
+                    row.push("Ja");
+                } else {
+                    row.push("Nein")
+                }
+            });
+            personTable.addRow(row, 0);
+        });
+        personTable.commit();
+        worksheet.getRows(1, 4).height = 30;
+        worksheet.getCell('A1').value = "Alle Personen";
+        worksheet.getCell('A1').font = {
+                size: 18,
+                bold: true,
+                family: 4,
+            },
+        worksheet.getCell('D2').value = 'Personen insegsamt:       ' + persons.length;
         await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(function() {
             logger.info('Excel file saved');
             res.download(path.join(__dirname, '../../exports/' + filename + '.xlsx'));
