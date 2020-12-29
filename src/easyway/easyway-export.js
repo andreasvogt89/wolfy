@@ -232,9 +232,9 @@ router.post('/excel/persons', authenticateToken, async(req, res, next) => {
             let row = [
                 data.event.name,
                 new moment(newDate).format('LL'),
-                data.person.place,
-                data.person.comments,
-                data.person.participants.length,
+                data.event.place,
+                data.event.comments,
+                data.event.participants.length,
             ];
             eventTable.addRow(row, 0);
         });
