@@ -130,7 +130,7 @@ async function deleteDependendItems(id, model) {
             const eventModel = getMongooseModel(schemaName.EVENT);
             let events = await eventModel.find({});
             asyncForEach(events, async (eventItem) => {
-                eventItem.event.participants.splice(eventItem.event.participants.indexOf(id), 1);
+                eventItem.event.participants = eventItem.event.participants.filter(item => item._id !== id);
                 await eventModel.updateOne({ _id: eventItem._id }, { $set: eventItem });
             });
         }
@@ -145,7 +145,7 @@ async function refreshEventsDB(id, body) {
         let events = await eventModel.find({});
         asyncForEach(events, async (element) => {
             if (isIncluded(element._id, body.person.event) && !element.event.participants.includes(id)) {
-                element.event.participants.push(id.toString());
+                element.event.participants.push(id);
             } else if (!isIncluded(element._id, body.person.event) && element.event.participants.includes(id)) {
                 element.event.participants.splice(element.event.participants.indexOf(id), 1);
             }
