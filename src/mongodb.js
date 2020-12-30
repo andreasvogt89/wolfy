@@ -82,6 +82,7 @@ const personSchema = new mongoose.Schema({
         },
         city: {
             type: String,
+            required: true
         },
         postcode: {
             type: Number,
