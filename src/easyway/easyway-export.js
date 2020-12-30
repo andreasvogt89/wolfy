@@ -149,15 +149,26 @@ router.post('/excel/statistic', authenticateToken, async(req, res, next) => {
                 { name: 'Wo', filterButton: true },
                 { name: 'Kommentar', filterButton: true },
                 { name: 'Anzahl Personen', filterButton: true },
-                { name: 'Langendorf', filterButton: true },
-                { name: 'Rüttenen', filterButton: true },
-                { name: 'Oberdorf', filterButton: true },
-                { name: 'Bellach', filterButton: true },
-                { name: 'Selzach', filterButton: true },
-                { name: 'Lommiswil', filterButton: true },
-                { name: 'Bettlach', filterButton: true },
-                { name: 'Solothurn', filterButton: true },
-                { name: 'Andere', filterButton: true },
+                { name: 'Anzahl Frauen', filterButton: true },
+                { name: 'Anzahl Männer', filterButton: true },
+                { name: 'Langendorf W', filterButton: true },
+                { name: 'Langendorf M', filterButton: true },
+                { name: 'Rüttenen W', filterButton: true },
+                { name: 'Rüttenen M', filterButton: true },
+                { name: 'Oberdorf W', filterButton: true },
+                { name: 'Oberdorf M', filterButton: true },
+                { name: 'Bellach W', filterButton: true },
+                { name: 'Bellach M', filterButton: true },
+                { name: 'Selzach W', filterButton: true },
+                { name: 'Selzach M', filterButton: true },
+                { name: 'Lommiswil W', filterButton: true },
+                { name: 'Lommiswil M', filterButton: true },
+                { name: 'Bettlach W', filterButton: true },
+                { name: 'Bettlach M', filterButton: true },
+                { name: 'Solothurn W', filterButton: true },
+                { name: 'Solothurn M', filterButton: true },
+                { name: 'Andere W', filterButton: true },
+                { name: 'Andere M', filterButton: true },
             ],
             rows: [],
         });
@@ -171,15 +182,26 @@ router.post('/excel/statistic', authenticateToken, async(req, res, next) => {
                 data.event.place,
                 data.event.comments,
                 data.event.participants.length,
-                places.langendorf,
-                places.rüttenen,
-                places.oberdorf,
-                places.bellach,
-                places.selzach,
-                places.lommiswil,
-                places.bettlach,
-                places.solothurn,
-                places.andere,
+                places.women,
+                places.man,
+                places.langendorfW,
+                places.langendorfM,
+                places.rüttenenW,
+                places.rüttenenM,
+                places.oberdorfW,
+                places.oberdorfM,
+                places.bellachW,
+                places.bellachM,
+                places.selzachW,
+                places.selzachM,
+                places.lommiswilW,
+                places.lommiswilM,
+                places.bettlachW,
+                places.bettlachM,
+                places.solothurnW,
+                places.solothurnM,
+                places.andereW,
+                places.andereM,
             ];
             eventTable.addRow(row, 0);
         });
@@ -191,7 +213,7 @@ router.post('/excel/statistic', authenticateToken, async(req, res, next) => {
                 bold: true,
                 family: 4,
             },
-        worksheetEvents.getCell('A3').value = 'Events insgesamt:       ' + events.length;
+            worksheetEvents.getCell('A3').value = 'Events insgesamt:       ' + events.length;
         await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(function() {
             logger.info('Excel file saved');
             res.download(path.join(__dirname, '../../exports/' + filename + '.xlsx'));
@@ -212,46 +234,87 @@ function isIncluded(id, personEvents) {
     return answer;
 }
 
-function countPersonsPerCity(eventItem, personData){
-    let eventPersons = personData.filter(item => eventItem.event.participants.includes(item._id));    
+function countPersonsPerCity(eventItem, personData) {
+    let eventPersons = personData.filter(item => eventItem.event.participants.includes(item._id));
     let places = {
-        langendorf: 0,
-        rüttenen: 0,
-        oberdorf: 0,
-        bellach: 0,
-        selzach: 0,
-        lommiswil: 0,
-        bettlach: 0,
-        solothurn: 0,
-        andere: 0,
+        man: 0,
+        women: 0,
+        langendorfW: 0,
+        rüttenenW: 0,
+        oberdorfW: 0,
+        bellachW: 0,
+        selzachW: 0,
+        lommiswilW: 0,
+        bettlachW: 0,
+        solothurnW: 0,
+        andereW: 0,
+        langendorfM: 0,
+        rüttenenM: 0,
+        oberdorfM: 0,
+        bellachM: 0,
+        selzachM: 0,
+        lommiswilM: 0,
+        bettlachM: 0,
+        solothurnM: 0,
+        andereM: 0,
     }
-    eventPersons.forEach(item=> {
-        if(item.person.city === 'Langendorf'){
-           eventItem.langendorf++; 
-        }
-        else if(item.person.city === 'Rüttenen'){
-           eventItem.rüttenen++;
-        }
-        else if(item.person.city === 'Oberdorf'){
-            eventItem.oberdorf++;
-        }
-        else if(item.person.city === 'Bellach'){
-            eventItem.bellach++;
-        }
-        else if(item.person.city === 'Selzach'){
-            eventItem.selzach++;
-        }
-        else if(item.person.city === 'Lommiswil'){
-            eventItem.lommiswil++;
-        }
-        else if(item.person.city === 'Bettlach'){
-            eventItem.bellach++;
-        }
-        else if(item.person.city === 'Solothurn'){
-            eventItem.solothurn++;
-        }
-        else {
-            eventItem.andere++;
+    eventPersons.forEach(item => {
+        if (item.person.city === 'Langendorf' && item.person.gender === "W") {
+            places.langendorfW++;
+            places.women++;
+        } else if (item.person.city === 'Langendorf' && item.person.gender === "M") {
+            places.langendorfM++;
+            places.man++;
+        } else if (item.person.city === 'Rüttenen' && item.person.gender === "W") {
+            places.rüttenenW++;
+            places.women++;
+        } else if (item.person.city === 'Rüttenen' && item.person.gender === "M") {
+            places.rüttenenM++;
+            places.man++;
+        } else if (item.person.city === 'Oberdorf' && item.person.gender === "W") {
+            places.oberdorfW++;
+            places.women++;
+        } else if (item.person.city === 'Oberdorf' && item.person.gender === "M") {
+            places.oberdorfM++;
+            places.man++;
+        } else if (item.person.city === 'Bellach' && item.person.gender === "W") {
+            places.bellachW++;
+            places.women++;
+        } else if (item.person.city === 'Bellach' && item.person.gender === "M") {
+            places.bellachM++;
+            places.man++;
+        } else if (item.person.city === 'Selzach' && item.person.gender === "W") {
+            places.selzachW++;
+            places.women++;
+        } else if (item.person.city === 'Selzach' && item.person.gender === "M") {
+            places.selzachM++;
+            places.man++;
+        } else if (item.person.city === 'Lommiswil' && item.person.gender === "W") {
+            places.lommiswilW++;
+            places.women++;
+        } else if (item.person.city === 'Lommiswil' && item.person.gender === "M") {
+            places.lommiswilM++;
+            places.man++;
+        } else if (item.person.city === 'Bettlach' && item.person.gender === "W") {
+            places.bellachW++;
+            places.women++;
+        } else if (item.person.city === 'Bettlach' && item.person.gender === "M") {
+            places.bellachM++;
+            places.man++;
+        } else if (item.person.city === 'Solothurn' && item.person.gender === "W") {
+            places.solothurnW++;
+            places.women++;
+        } else if (item.person.city === 'Solothurn' && item.person.gender === "M") {
+            places.solothurnM++;
+            places.man++;
+        } else {
+            if (item.person.gender === 'W') {
+                places.women++;
+                places.andere++;
+            } else {
+                places.man++;
+                places.andere++;
+            }
         }
     });
     return places
