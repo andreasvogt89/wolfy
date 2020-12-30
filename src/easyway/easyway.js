@@ -32,13 +32,7 @@ router.post('/add', authenticateToken, async(req, res, next) => {
     logger.info(`add object to ${req.headers.collection}`);
     try {
         const model = getMongooseModel(req.headers.collection);
-        let newID = ""
-        await model.create(req.body).then(res => {
-            newID = res._id;
-        })
-        if (req.headers.collection === schemaName.PERSON) {
-            await refreshEventsDB(newID, req.body);
-        }
+        await model.create(req.body);
         res.status(201).send();
     } catch (err) {
         logger.error('add to db failed: ' + err.message);
@@ -57,9 +51,6 @@ router.put('/change/:id', authenticateToken, async(req, res, next) => {
     try {
         const model = getMongooseModel(req.headers.collection);
         await model.updateOne({ _id: req.params.id }, { $set: req.body });
-        if (req.headers.collection === schemaName.PERSON) {
-            await refreshEventsDB(req.params.id, req.body);
-        }
         res.status(200).send();
     } catch (err) {
         logger.error('change failed: ' + err.message);
@@ -126,38 +117,9 @@ async function deleteDependendItems(id, model) {
                     }
                 }
             });
-        } else {
-            const eventModel = getMongooseModel(schemaName.EVENT);
-            let events = await eventModel.find({});
-            await asyncForEach(events, async(eventItem) => {
-                if (eventItem.event.participants.includes(id)) {
-                    console.log(eventItem.event.name)
-                    let party = eventItem.event.participants.filter(item => item !== id);
-                    eventItem.event.participants = party;
-                    await eventModel.updateOne({ _id: eventItem._id }, { $set: eventItem });
-                }
-
-            });
         }
     } catch (error) {
         logger.error("Delete refreshing crashed: " + error)
-    }
-}
-
-async function refreshEventsDB(id, body) {
-    try {
-        const eventModel = getMongooseModel(schemaName.EVENT);
-        let events = await eventModel.find({});
-        await asyncForEach(events, async(element) => {
-            if (isIncluded(element._id, body.person.event) && !element.event.participants.includes(id)) {
-                element.event.participants.push(id);
-            } else if (!isIncluded(element._id, body.person.event) && element.event.participants.includes(id)) {
-                element.event.participants.splice(element.event.participants.indexOf(id), 1);
-            }
-            await eventModel.updateOne({ _id: element._id }, { $set: element });
-        });
-    } catch (error) {
-        logger.error("Event refreshing crashed: " + error)
     }
 }
 
