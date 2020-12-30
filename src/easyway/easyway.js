@@ -100,7 +100,7 @@ async function recalCalculateAge() {
     const personModel = getMongooseModel(schemaName.PERSON);
     let persons = await personModel.find({});
     asyncForEach(persons, async (personItem) => {
-        if (personItem.person.firstname !== "#DUMMY") {
+        if (personItem.person.firstname !== "#DUMMY" || personItem.person.birthdate !== "") {
             let ageDifMs = Date.now() - new Date(personItem.person.birthdate).getTime();
             let ageDate = new Date(ageDifMs);
             personItem.person.age = Math.abs(ageDate.getUTCFullYear() - 1970);
