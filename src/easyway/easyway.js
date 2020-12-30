@@ -10,7 +10,7 @@ const { roles } = require('../userdb');
  * Get db Collection as array
  * Headers = {Collection = ""}
  */
-router.get('/collection', authenticateToken, async (req, res, next) => {
+router.get('/collection', authenticateToken, async(req, res, next) => {
     logger.info('fetch all ' + req.headers.collection + ' from db');
     try {
         //perhabs this could be done less often
@@ -28,7 +28,7 @@ router.get('/collection', authenticateToken, async (req, res, next) => {
  * Body = Entry object
  * Headers = {collection = ""}
  */
-router.post('/add', authenticateToken, async (req, res, next) => {
+router.post('/add', authenticateToken, async(req, res, next) => {
     logger.info(`add object to ${req.headers.collection}`);
     try {
         const model = getMongooseModel(req.headers.collection);
@@ -52,7 +52,7 @@ router.post('/add', authenticateToken, async (req, res, next) => {
  * Body = Object only with changed properties
  * Headers = {collection = ""}
  */
-router.put('/change/:id', authenticateToken, async (req, res, next) => {
+router.put('/change/:id', authenticateToken, async(req, res, next) => {
     logger.info(`change in ${req.headers.collection} this -> ${req.params.id}`);
     try {
         const model = getMongooseModel(req.headers.collection);
@@ -71,13 +71,13 @@ router.put('/change/:id', authenticateToken, async (req, res, next) => {
  * Delete mongodb entry
  * Headers = {collection = ""}
  */
-router.delete('/delete/:id', authenticateToken, async (req, res, next) => {
+router.delete('/delete/:id', authenticateToken, async(req, res, next) => {
     logger.info(`delete in collection ${req.headers.collection} this -> ${req.params.id}`);
     try {
         if (req.user.role === roles.ADMIN) {
+            await deleteDependendItems(req.params.id, req.headers.collection);
             const model = getMongooseModel(req.headers.collection);
             await model.deleteOne({ _id: req.params.id });
-            await deleteDependendItems(req.params.id, req.headers.collection);
             res.status(200).send();
         } else {
             res.status(401).send({ message: 'Permission denied' });
@@ -99,7 +99,7 @@ function getMongooseModel(modelName) {
 async function recalCalculateAge() {
     const personModel = getMongooseModel(schemaName.PERSON);
     let persons = await personModel.find({});
-    asyncForEach(persons, async (personItem) => {
+    asyncForEach(persons, async(personItem) => {
         if (personItem.person.firstname !== "#DUMMY" || personItem.person.birthdate !== "") {
             let ageDifMs = Date.now() - new Date(personItem.person.birthdate).getTime();
             let ageDate = new Date(ageDifMs);
@@ -116,7 +116,7 @@ async function deleteDependendItems(id, model) {
         if (model === schemaName.EVENT) {
             const personModel = getMongooseModel(schemaName.PERSON);
             let persons = await personModel.find({});
-            asyncForEach(persons, async (personItem) => {
+            await asyncForEach(persons, async(personItem) => {
                 if (isIncluded(id, personItem.person.event)) {
                     if (personItem.person.firstname === '#DUMMY') {
                         await personModel.deleteOne({ _id: personItem._id });
@@ -129,9 +129,14 @@ async function deleteDependendItems(id, model) {
         } else {
             const eventModel = getMongooseModel(schemaName.EVENT);
             let events = await eventModel.find({});
-            asyncForEach(events, async (eventItem) => {
-                eventItem.event.participants = eventItem.event.participants.filter(item => item._id !== id);
-                await eventModel.updateOne({ _id: eventItem._id }, { $set: eventItem });
+            await asyncForEach(events, async(eventItem) => {
+                if (eventItem.event.participants.includes(id)) {
+                    console.log(eventItem.event.name)
+                    let party = eventItem.event.participants.filter(item => item !== id);
+                    eventItem.event.participants = party;
+                    await eventModel.updateOne({ _id: eventItem._id }, { $set: eventItem });
+                }
+
             });
         }
     } catch (error) {
@@ -143,7 +148,7 @@ async function refreshEventsDB(id, body) {
     try {
         const eventModel = getMongooseModel(schemaName.EVENT);
         let events = await eventModel.find({});
-        asyncForEach(events, async (element) => {
+        await asyncForEach(events, async(element) => {
             if (isIncluded(element._id, body.person.event) && !element.event.participants.includes(id)) {
                 element.event.participants.push(id);
             } else if (!isIncluded(element._id, body.person.event) && element.event.participants.includes(id)) {
