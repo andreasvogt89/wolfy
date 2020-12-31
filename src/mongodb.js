@@ -48,10 +48,6 @@ const eventSchema = new mongoose.Schema({
         place: {
             type: String,
         },
-        participants: {
-            type: Array,
-            required: true
-        },
         comments: {
             type: String,
         },
