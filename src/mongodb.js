@@ -70,6 +70,7 @@ const personSchema = new mongoose.Schema({
         },
         age: {
             type: Number,
+            required: true,
         },
         birthdate: {
             type: Date,
@@ -78,23 +79,23 @@ const personSchema = new mongoose.Schema({
             type: String,
         },
         street_number: {
-            type: Number,
+            type: String,
         },
         city: {
             type: String,
             required: true
         },
         postcode: {
-            type: Number,
+            type: String,
         },
         email: {
             type: String,
         },
         phone: {
-            type: Number,
+            type: String,
         },
         emergency_phone: {
-            type: Number,
+            type: String,
         },
         gender: {
             type: gender,

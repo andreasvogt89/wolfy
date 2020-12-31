@@ -33,10 +33,10 @@ router.post('/add', authenticateToken, async(req, res, next) => {
     try {
         const model = getMongooseModel(req.headers.collection);
         let newID = ""
-        await model.create(req.body).then(doc=>{
-           newID = doc._id
+        await model.create(req.body).then(doc => {
+            newID = doc._id
         });
-        res.status(201).send({newID});
+        res.status(201).send({ newID });
     } catch (err) {
         logger.error('add to db failed: ' + err.message);
         next(err);
@@ -53,10 +53,8 @@ router.put('/change/:id', authenticateToken, async(req, res, next) => {
     try {
         const model = getMongooseModel(req.headers.collection);
         let changedID = ""
-        await model.updateOne({ _id: req.params.id }, { $set: req.body }).then(doc=>{
-            changedID = doc._id
-        });
-        res.status(200).send({changedID});
+        await model.updateOne({ _id: req.params.id }, { $set: req.body });
+        res.status(200).send({ changedID });
     } catch (err) {
         logger.error('change failed: ' + err.message);
         next(err);
@@ -112,12 +110,12 @@ async function deleteDependendItems(id, model) {
     const eventModel = getMongooseModel(schemaName.EVENT);
     try {
         if (model === schemaName.EVENT) {
-            let toDeleteEvent =  await eventModel.find({_id: id})
-            await asyncForEach(toDeleteEvent.event.participants, async(personID) => {
-                    let personItem = await personModel.find({_id: personID});
-                    if (personItem.person.firstname === '#DUMMY') {
-                        await personModel.deleteOne({ _id: personItem._id });
-                    }
+            let toDeleteEvent = await eventModel.find({ _id: id });
+            await asyncForEach(toDeleteEvent[0].event.participants, async(personID) => {
+                let personItem = await personModel.find({ _id: personID });
+                if (personItem[0].person.firstname === '#DUMMY') {
+                    await personModel.deleteOne({ _id: personItem[0]._id });
+                }
             });
         } else {
             let events = await eventModel.find({});
