@@ -3,6 +3,7 @@ const router = express.Router();
 const logger = require('../serverlog/logger');
 const path = require('path');
 const exceljs = require('exceljs');
+const { asyncForEach } = require('../utils/functions');
 const { authenticateToken } = require('../auth');
 const { Event, Person } = require('../mongodb');
 const moment = require('moment');
@@ -12,8 +13,8 @@ router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for event: ${req.params.id}`);
     try {
         let personData = await Person.find({});
-        let persons = personData.filter(personItem => isIncluded(req.params.id, personItem.person.event));
         let event = await Event.findOne({ _id: req.params.id });
+        let persons = personData.filter(item => event.event.participants.includes(item._id));
         const filename = req.headers.filename
         res.setHeader(
             "Content-Type",

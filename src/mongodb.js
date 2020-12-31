@@ -96,10 +96,6 @@ const personSchema = new mongoose.Schema({
         emergency_phone: {
             type: Number,
         },
-        event: {
-            type: Array,
-            required: true,
-        },
         gender: {
             type: gender,
             required: true,

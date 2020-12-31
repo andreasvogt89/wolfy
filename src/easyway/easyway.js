@@ -33,19 +33,15 @@ router.post('/add', authenticateToken, async(req, res, next) => {
     try {
         const model = getMongooseModel(req.headers.collection);
         let newID = ""
-        await model.create(req.body).then(res => {
-            newID = res._id;
-        })
-        if (req.headers.collection === schemaName.PERSON) {
-            await refreshEventsDB(newID, req.body);
-        }
-        res.status(201).send();
+        await model.create(req.body).then(doc=>{
+           newID = doc._id
+        });
+        res.status(201).send({newID});
     } catch (err) {
         logger.error('add to db failed: ' + err.message);
         next(err);
     }
 });
-
 
 /**
  * Change data in DB
@@ -56,11 +52,11 @@ router.put('/change/:id', authenticateToken, async(req, res, next) => {
     logger.info(`change in ${req.headers.collection} this -> ${req.params.id}`);
     try {
         const model = getMongooseModel(req.headers.collection);
-        await model.updateOne({ _id: req.params.id }, { $set: req.body });
-        if (req.headers.collection === schemaName.PERSON) {
-            await refreshEventsDB(req.params.id, req.body);
-        }
-        res.status(200).send();
+        let changedID = ""
+        await model.updateOne({ _id: req.params.id }, { $set: req.body }).then(doc=>{
+            changedID = doc._id
+        });
+        res.status(200).send({changedID});
     } catch (err) {
         logger.error('change failed: ' + err.message);
         next(err);
@@ -112,64 +108,29 @@ async function recalCalculateAge() {
 
 async function deleteDependendItems(id, model) {
     //get de inverse collection to delete the depencies
+    const personModel = getMongooseModel(schemaName.PERSON);
+    const eventModel = getMongooseModel(schemaName.EVENT);
     try {
         if (model === schemaName.EVENT) {
-            const personModel = getMongooseModel(schemaName.PERSON);
-            let persons = await personModel.find({});
-            await asyncForEach(persons, async(personItem) => {
-                if (isIncluded(id, personItem.person.event)) {
+            let toDeleteEvent =  await eventModel.find({_id: id})
+            await asyncForEach(toDeleteEvent.event.participants, async(personID) => {
+                    let personItem = await personModel.find({_id: personID});
                     if (personItem.person.firstname === '#DUMMY') {
                         await personModel.deleteOne({ _id: personItem._id });
-                    } else {
-                        personItem.person.event = personItem.person.event.filter(item => item._id !== id);
-                        await personModel.updateOne({ _id: personItem._id }, { $set: personItem });
                     }
-                }
             });
         } else {
-            const eventModel = getMongooseModel(schemaName.EVENT);
             let events = await eventModel.find({});
             await asyncForEach(events, async(eventItem) => {
                 if (eventItem.event.participants.includes(id)) {
-                    console.log(eventItem.event.name)
-                    let party = eventItem.event.participants.filter(item => item !== id);
-                    eventItem.event.participants = party;
+                    eventItem.event.participants.splice(eventItem.event.participants.indexOf(id), 1);
                     await eventModel.updateOne({ _id: eventItem._id }, { $set: eventItem });
                 }
-
             });
         }
     } catch (error) {
         logger.error("Delete refreshing crashed: " + error)
     }
 }
-
-async function refreshEventsDB(id, body) {
-    try {
-        const eventModel = getMongooseModel(schemaName.EVENT);
-        let events = await eventModel.find({});
-        await asyncForEach(events, async(element) => {
-            if (isIncluded(element._id, body.person.event) && !element.event.participants.includes(id)) {
-                element.event.participants.push(id);
-            } else if (!isIncluded(element._id, body.person.event) && element.event.participants.includes(id)) {
-                element.event.participants.splice(element.event.participants.indexOf(id), 1);
-            }
-            await eventModel.updateOne({ _id: element._id }, { $set: element });
-        });
-    } catch (error) {
-        logger.error("Event refreshing crashed: " + error)
-    }
-}
-
-function isIncluded(id, personEvents) {
-    let answer = false;
-    personEvents.forEach(item => {
-        if (item._id == id) {
-            answer = true;
-        }
-    });
-    return answer;
-}
-
 
 module.exports = router;
