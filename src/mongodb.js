@@ -51,6 +51,10 @@ const eventSchema = new mongoose.Schema({
         comments: {
             type: String,
         },
+        participants: {
+            type: Array,
+            required: true
+        },
     }
 }, { timestamps: true }, );
 
