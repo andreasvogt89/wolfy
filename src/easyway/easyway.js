@@ -52,9 +52,8 @@ router.put('/change/:id', authenticateToken, async(req, res, next) => {
     logger.info(`change in ${req.headers.collection} this -> ${req.params.id}`);
     try {
         const model = getMongooseModel(req.headers.collection);
-        let changedID = ""
         await model.updateOne({ _id: req.params.id }, { $set: req.body });
-        res.status(200).send({ changedID });
+        res.status(200).send();
     } catch (err) {
         logger.error('change failed: ' + err.message);
         next(err);
