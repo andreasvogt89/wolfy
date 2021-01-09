@@ -114,7 +114,7 @@ router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
     }
 });
 
-router.get('/excel/presons/', authenticateToken, async(req, res, next) => {
+router.get('/excel/persons', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for all persons`);
     try {
         let personData = await Person.find({});
