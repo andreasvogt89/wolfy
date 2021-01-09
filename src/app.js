@@ -72,6 +72,7 @@ app.post('/login', async(req, res, next) => {
                     username: user[0].username,
                     role: user[0].role
                 }, process.env.TOKEN_SECRET, { expiresIn: '3h'});
+                user.password = "😋"
                 res.status(200).json({
                     accessToken,
                     user,
