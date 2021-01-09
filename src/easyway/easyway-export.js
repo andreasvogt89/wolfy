@@ -118,7 +118,7 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for all persons`);
     try {
         let personData = await Person.find({});
-        let persons = personData.filter(item => item.person.firstname !== "#Dummy");
+        let persons = personData.filter(item => item.person.firstname !== "#DUMMY");
         const filename = req.headers.filename
         res.setHeader(
             "Content-Type",
@@ -160,7 +160,6 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
         });
         const eventTable = worksheet.getTable('Teilnehmer');
         persons.forEach(data => {
-            let newDate = new Date(data.person.birthdate);
             eventTable.addRow([
                 data.person.firstname,
                 data.person.lastname,
@@ -169,7 +168,7 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
                 data.person.email,
                 data.person.class,
                 data.person.age,
-                new moment(newDate).format('LL'),
+                parseDate(data.person.birthdate),
                 data.person.comments,
                 data.person.gender,
                 data.person.street,
@@ -179,7 +178,7 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
             ], 0);
         });
         eventTable.commit();
-        worksheet.getCell('A1').value = "Export von allen Personen "
+        worksheet.getCell('A1').value = "Personen "
         worksheet.getRow(1).font = {
                 size: 18,
                 bold: true,
@@ -266,16 +265,17 @@ router.post('/excel/statistic', authenticateToken, async(req, res, next) => {
                 { name: 'Solothurn M', filterButton: true },
                 { name: 'Andere W', filterButton: true },
                 { name: 'Andere M', filterButton: true },
+                { name: 'Anzahl Kids', filterButton: true },
+                { name: 'Anzahl Jugendtliche', filterButton: true },
             ],
             rows: [],
         });
         const eventTable = worksheetEvents.getTable('Events');
         events.forEach(data => {
-            let newDate = new Date(data.event.eventDate);
             let places = countPersonsPerCity(data, personData);
             let row = [
                 data.event.name,
-                new moment(newDate).format('LL'),
+                parseDate(data.event.eventDate),
                 data.event.place,
                 data.event.comments,
                 data.event.participants.length,
@@ -299,6 +299,8 @@ router.post('/excel/statistic', authenticateToken, async(req, res, next) => {
                 places.solothurnM,
                 places.andereW,
                 places.andereM,
+                places.kids,
+                places.teens,
             ];
             eventTable.addRow(row, 0);
         });
@@ -326,6 +328,8 @@ function countPersonsPerCity(eventItem, personData) {
     let places = {
         man: 0,
         women: 0,
+        kids: 0,
+        teens:0,
         langendorfW: 0,
         rüttenenW: 0,
         oberdorfW: 0,
@@ -349,62 +353,162 @@ function countPersonsPerCity(eventItem, personData) {
         if (item.person.city === 'Langendorf' && item.person.gender === "W") {
             places.langendorfW++;
             places.women++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Langendorf' && item.person.gender === "M") {
             places.langendorfM++;
             places.man++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Rüttenen' && item.person.gender === "W") {
             places.rüttenenW++;
             places.women++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Rüttenen' && item.person.gender === "M") {
             places.rüttenenM++;
             places.man++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Oberdorf' && item.person.gender === "W") {
             places.oberdorfW++;
             places.women++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Oberdorf' && item.person.gender === "M") {
             places.oberdorfM++;
             places.man++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Bellach' && item.person.gender === "W") {
             places.bellachW++;
             places.women++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Bellach' && item.person.gender === "M") {
             places.bellachM++;
             places.man++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Selzach' && item.person.gender === "W") {
             places.selzachW++;
             places.women++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Selzach' && item.person.gender === "M") {
             places.selzachM++;
             places.man++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Lommiswil' && item.person.gender === "W") {
             places.lommiswilW++;
             places.women++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Lommiswil' && item.person.gender === "M") {
             places.lommiswilM++;
             places.man++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Bettlach' && item.person.gender === "W") {
             places.bellachW++;
             places.women++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Bettlach' && item.person.gender === "M") {
             places.bellachM++;
             places.man++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Solothurn' && item.person.gender === "W") {
             places.solothurnW++;
             places.women++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else if (item.person.city === 'Solothurn' && item.person.gender === "M") {
             places.solothurnM++;
             places.man++;
+            if(item.person.age < 13){
+                places.kids++    
+                } else{
+                    places.teens++   
+                }
         } else {
             if (item.person.gender === 'W') {
                 places.women++;
                 places.andere++;
+                if(item.person.age < 13){
+                    places.kids++    
+                    } else{
+                        places.teens++   
+                    }
             } else {
                 places.man++;
                 places.andere++;
+                if(item.person.age < 13){
+                    places.kids++    
+                    } else{
+                        places.teens++   
+                    }
             }
         }
     });
     return places
+}
+
+function parseDate(date){
+    if(date !== null){
+     let newDate = new Date(date);
+     moment.locale('de-ch');        
+     return new moment(newDate).format('LL');
+    } else {
+      return ""
+    }
 }
 
 
