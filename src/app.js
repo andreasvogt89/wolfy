@@ -34,31 +34,22 @@ connectDb().then(() => {
     logger.info("DB connection successful!");
 
     // Create new User manually
-    //const userdb = require('./userdb');
-    //userdb.createUser().then((res) => {
-    //    logger.info(res);
-    //}).catch(err => {
-    //logger.error(err);
-    //});
+    const userdb = require('./userdb');
+    userdb.createUser().then((res) => {
+        logger.info(res);
+    }).catch(err => {
+        logger.error(err);
+    });
 
 }).catch(err => {
     logger.error("DB connection failed: " + err)
 });
 
-
-// Delete Persons db
-/*
-  const {Person} = require('./mongodb');
-  Person.deleteMany({}).then(res=>{
-    console.log(res);
-  }).catch(e=> {
-  console.log(e);
-});*/
 app.post('/login', async(req, res, next) => {
     // Read username and password from request body
     logger.info('login from: ' + req.headers['x-forwarded-for'] +
         " as: " + req.body.username);
-    let  timeStamp = new Date()
+    let timeStamp = new Date()
     timeStamp.setHours(timeStamp.getHours() + 24)
     try {
         const user = await User.find({ username: req.body.username });
@@ -67,11 +58,11 @@ app.post('/login', async(req, res, next) => {
             if (match) {
                 // Generate an access token
                 let now = new Date();
-                let expiresAt = now.setHours( now.getHours() + 3 );
+                let expiresAt = now.setHours(now.getHours() + 3);
                 const accessToken = jwt.sign({
                     username: user[0].username,
                     role: user[0].role
-                }, process.env.TOKEN_SECRET, { expiresIn: '3h'});
+                }, process.env.TOKEN_SECRET, { expiresIn: '3h' });
                 user[0].password = "😋"
                 res.status(200).json({
                     accessToken,

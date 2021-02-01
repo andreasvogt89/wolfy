@@ -1,6 +1,7 @@
 const { User } = require('./mongodb');
 const bcrypt = require('bcrypt');
 const logger = require('./serverlog/logger');
+require('dotenv').config();
 const roles = {
     ADMIN: "Admin",
     USER: "User"
@@ -9,9 +10,9 @@ const roles = {
 async function createUser() {
     try {
         const user = {
-            username: "",
-            password: await bcrypt.hash("", 10),
-            role: roles.USER
+            username: process.env.NEW_USER,
+            password: await bcrypt.hash(process.env.NEW_USER_PW, 10),
+            role: roles.ADMIN
         }
         logger.info(`Create user: ${JSON.stringify(user)}`);
         User.create(user);
