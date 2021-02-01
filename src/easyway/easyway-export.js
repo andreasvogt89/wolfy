@@ -184,7 +184,7 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
                 bold: true,
                 family: 4,
             },
-        worksheet.getCell('D1').value = 'Exportiert am: ' + new moment(new Date()).format('LL');
+            worksheet.getCell('D1').value = 'Exportiert am: ' + new moment(new Date()).format('LL');
         worksheet.getCell('A2').value = 'Personen insegsamt:       ' + persons.length;
         worksheet.columns = [
             { key: 'Vorname', width: 20 },
@@ -225,9 +225,10 @@ router.post('/excel/statistic', authenticateToken, async(req, res, next) => {
             "attachment; filename=" + filename + ".xlsx"
         );
         let personData = await Person.find({});
-        let eventData = await Event.find(item => req.body.eventNames.includes(item.event.name));
-        req.body.years = ["2021"];
-        let events = eventData.filter(event => req.body.years.includes(new Date(event.event.eventDate).getFullYear().toString()));
+        let eventData = await Event.find({});
+        let events = eventData.filter(event =>
+            req.body.eventNames.includes(event.event.name) &&
+            req.body.years.includes(new Date(event.event.eventDate).getFullYear().toString()));
         let workbook = new exceljs.Workbook();
         //worksheet Events
         let worksheetEvents = workbook.addWorksheet('Events');
@@ -330,7 +331,7 @@ function countPersonsPerCity(eventItem, personData) {
         man: 0,
         women: 0,
         kids: 0,
-        teens:0,
+        teens: 0,
         langendorfW: 0,
         rüttenenW: 0,
         oberdorfW: 0,
@@ -354,161 +355,161 @@ function countPersonsPerCity(eventItem, personData) {
         if (item.person.city === 'Langendorf' && item.person.gender === "W") {
             places.langendorfW++;
             places.women++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Langendorf' && item.person.gender === "M") {
             places.langendorfM++;
             places.man++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Rüttenen' && item.person.gender === "W") {
             places.rüttenenW++;
             places.women++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Rüttenen' && item.person.gender === "M") {
             places.rüttenenM++;
             places.man++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Oberdorf' && item.person.gender === "W") {
             places.oberdorfW++;
             places.women++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Oberdorf' && item.person.gender === "M") {
             places.oberdorfM++;
             places.man++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Bellach' && item.person.gender === "W") {
             places.bellachW++;
             places.women++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Bellach' && item.person.gender === "M") {
             places.bellachM++;
             places.man++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Selzach' && item.person.gender === "W") {
             places.selzachW++;
             places.women++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Selzach' && item.person.gender === "M") {
             places.selzachM++;
             places.man++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Lommiswil' && item.person.gender === "W") {
             places.lommiswilW++;
             places.women++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Lommiswil' && item.person.gender === "M") {
             places.lommiswilM++;
             places.man++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Bettlach' && item.person.gender === "W") {
             places.bellachW++;
             places.women++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Bettlach' && item.person.gender === "M") {
             places.bellachM++;
             places.man++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Solothurn' && item.person.gender === "W") {
             places.solothurnW++;
             places.women++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else if (item.person.city === 'Solothurn' && item.person.gender === "M") {
             places.solothurnM++;
             places.man++;
-            if(item.person.age < 13){
-                places.kids++    
-                } else{
-                    places.teens++   
-                }
+            if (item.person.age < 13) {
+                places.kids++
+            } else {
+                places.teens++
+            }
         } else {
             if (item.person.gender === 'W') {
                 places.women++;
                 places.andere++;
-                if(item.person.age < 13){
-                    places.kids++    
-                    } else{
-                        places.teens++   
-                    }
+                if (item.person.age < 13) {
+                    places.kids++
+                } else {
+                    places.teens++
+                }
             } else {
                 places.man++;
                 places.andere++;
-                if(item.person.age < 13){
-                    places.kids++    
-                    } else{
-                        places.teens++   
-                    }
+                if (item.person.age < 13) {
+                    places.kids++
+                } else {
+                    places.teens++
+                }
             }
         }
     });
     return places
 }
 
-function parseDate(date){
-    if(date !== null){
-     let newDate = new Date(date);
-     moment.locale('de-ch');        
-     return new moment(newDate).format('LL');
+function parseDate(date) {
+    if (date !== null) {
+        let newDate = new Date(date);
+        moment.locale('de-ch');
+        return new moment(newDate).format('LL');
     } else {
-      return ""
+        return ""
     }
 }
 

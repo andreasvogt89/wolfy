@@ -7,10 +7,10 @@ const roles = {
 }
 
 async function createUser() {
-    try {        
+    try {
         const user = {
-            username: "Jugendarbeit",
-            password: await bcrypt.hash("Jala4513", 10),
+            username: "",
+            password: await bcrypt.hash("", 10),
             role: roles.USER
         }
         logger.info(`Create user: ${JSON.stringify(user)}`);
