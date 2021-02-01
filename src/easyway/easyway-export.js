@@ -225,8 +225,9 @@ router.post('/excel/statistic', authenticateToken, async(req, res, next) => {
             "attachment; filename=" + filename + ".xlsx"
         );
         let personData = await Person.find({});
-        let eventData = await Event.find({});
-        let events = eventData.filter(item => req.body.eventNames.includes(item.event.name));
+        let eventData = await Event.find(item => req.body.eventNames.includes(item.event.name));
+        req.body.years = ["2021"];
+        let events = eventData.filter(event => req.body.years.includes(new Date(event.event.eventDate).getFullYear().toString()));
         let workbook = new exceljs.Workbook();
         //worksheet Events
         let worksheetEvents = workbook.addWorksheet('Events');
