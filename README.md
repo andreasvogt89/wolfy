@@ -1,5 +1,10 @@
 # Backend of Easy Way APP
 
+# Restore db from backup with: (Domain specific)
+```
+mongorestore --gzip --archive=/path/to/file.gz --db db_name
+```
+
 Includes API Server utilities:
 
 * [morgan](https://www.npmjs.com/package/morgan)
