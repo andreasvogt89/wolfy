@@ -43,3 +43,6 @@ npm run test
 ```
 npm run dev
 ```
+```
+cp /boot/config/plugins/dockerMAn/templates-user/my-Wolfy.xml /boot/config/plugins/community.applications/private/myrepo
+```
