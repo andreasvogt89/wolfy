@@ -6,6 +6,7 @@ const exceljs = require('exceljs');
 const { authenticateToken } = require('../auth');
 const { Event, Person } = require('../mongodb');
 const moment = require('moment');
+const { eventNames } = require('../serverlog/logger');
 moment.locale('de-ch');
 
 router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
@@ -114,12 +115,35 @@ router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
     }
 });
 
-router.get('/excel/persons', authenticateToken, async(req, res, next) => {
+router.post('/excel/persons', authenticateToken, async(req, res, next) => {
     logger.info(`get excel for all persons`);
     try {
         let personData = await Person.find({});
-        let persons = personData.filter(item => item.person.firstname !== "#DUMMY");
-        const filename = req.headers.filename
+        let eventData = await Event.find({});
+        let persons = [];
+        const filename = req.headers.filename;
+        let title = `Exportiert am: ${new moment(new Date()).format('LL')}`;
+        if (req.body.eventNames) {
+            let personIds = new Set();
+            eventData.filter(eventObject => req.body.eventNames.includes(eventObject.event.name)).forEach(eventObject => {
+                eventObject.event.participants.forEach(item => personIds.add(item));
+            });
+            persons = personData.filter(item => personIds.has(item._id.toString()) && item.person.firstname !== "#DUMMY");
+            title = title + "von:";
+            req.body.eventNames.forEach((name, i) => {
+                if (i === 0) {
+                    title = title + ` ${name}`
+                } else {
+                    title = title + ` & ${name}`
+                }
+            });
+        } else {
+            title = title + "alle Personen in Datenbank";
+            persons = personData.filter(item => item.person.firstname !== "#DUMMY");
+        }
+        if (persons.length === 0) {
+            throw new Error("No persons in filter!")
+        }
         res.setHeader(
             "Content-Type",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -180,11 +204,12 @@ router.get('/excel/persons', authenticateToken, async(req, res, next) => {
         eventTable.commit();
         worksheet.getCell('A1').value = "Personen "
         worksheet.getRow(1).font = {
-                size: 18,
-                bold: true,
-                family: 4,
-            },
-            worksheet.getCell('D1').value = 'Exportiert am: ' + new moment(new Date()).format('LL');
+            size: 18,
+            bold: true,
+            family: 4,
+        };
+
+        worksheet.getCell('D1').value = title;
         worksheet.getCell('A2').value = 'Personen insegsamt:       ' + persons.length;
         worksheet.columns = [
             { key: 'Vorname', width: 20 },
