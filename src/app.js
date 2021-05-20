@@ -1,15 +1,19 @@
 const express = require('express');
+const path = require('path');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const cors = require('cors');
 const jwt = require("jsonwebtoken");
+const cron = require('node-cron');
+const moment = require('moment');
+const { mailservice } = require('./mail/mailservice');
 const logger = require('./serverlog/logger');
 const { connectDb } = require('./mongodb');
 const bcrypt = require('bcrypt');
 const easywayexport = require('./easyway/easyway-export');
 
-
 require('dotenv').config();
+
 
 const middlewares = require('./middlewares');
 const easyWay = require('./easyway/easyway');
@@ -86,6 +90,53 @@ app.use('/export', easywayexport)
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
 
-
+//mail job
+/*
+  * * * * * *
+  | | | | | |
+  | | | | | day of week
+  | | | | month
+  | | | day of month
+  | | hour
+  | minute
+  second ( optional )
+  // every 1th of month = '* * * 1,2,3,4,5,6,7,8,9,10,11,12 1'
+*/
+cron.schedule('* * * 1,2,3,4,5,6,7,8,9,10,11,12 1', async() => {
+    logger.info('start mail report job...');
+    moment.locale('de-ch');
+    let filename = "Statistik " + new moment(new Date()).format('LL');
+    console.log(`${filename}`);
+    try {
+        await easywayexport.createStatisticExcel("*", new Date().getFullYear().toString(), filename, (result) => {
+            if (result) {
+                const mailOptions = {
+                    from: `"🦝" <${process.env.SMTPUSER}>`,
+                    to: process.env.MAILRECIPIENT,
+                    subject: 'Backup Report',
+                    text: 'Chasch i ahhang go luege..  🐴',
+                    html: '<b>Chasch i ahhang go luege..  🐴</b>',
+                    attachments: [{
+                        filename: filename + '.xlsx',
+                        path: path.join(__dirname, '../exports/' + filename + '.xlsx'),
+                    }],
+                };
+                mailservice.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        throw `failed to send mail to: ${mailOptions.to} cos: ${error}`;
+                    }
+                    logger.info(`sent reporter mail to: ${mailOptions.to}`)
+                });
+            } else {
+                throw result;
+            }
+        });
+    } catch (err) {
+        logger.error(error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Europe/Zurich"
+});
 
 module.exports = app;

@@ -6,7 +6,6 @@ const exceljs = require('exceljs');
 const { authenticateToken } = require('../auth');
 const { Event, Person } = require('../mongodb');
 const moment = require('moment');
-const { eventNames } = require('../serverlog/logger');
 moment.locale('de-ch');
 
 router.get('/excel/event/:id', authenticateToken, async(req, res, next) => {
@@ -249,100 +248,12 @@ router.post('/excel/statistic', authenticateToken, async(req, res, next) => {
             "Content-Disposition",
             "attachment; filename=" + filename + ".xlsx"
         );
-        let personData = await Person.find({});
-        let eventData = await Event.find({});
-        let events = eventData.filter(event =>
-            req.body.eventNames.includes(event.event.name) &&
-            req.body.years.includes(new Date(event.event.eventDate).getFullYear().toString()));
-        let workbook = new exceljs.Workbook();
-        //worksheet Events
-        let worksheetEvents = workbook.addWorksheet('Events');
-        worksheetEvents.addTable({
-            name: 'Events',
-            ref: 'A5',
-            headerRow: true,
-            totalsRow: true,
-            style: {
-                theme: 'TableStyleDark4',
-                showRowStripes: true,
-            },
-            columns: [
-                { name: 'Name', filterButton: true },
-                { name: 'Datum', filterButton: true },
-                { name: 'Wo', filterButton: true },
-                { name: 'Kommentar', filterButton: true },
-                { name: 'Anzahl Personen', filterButton: true },
-                { name: 'Anzahl Frauen', filterButton: true },
-                { name: 'Anzahl Männer', filterButton: true },
-                { name: 'Langendorf W', filterButton: true },
-                { name: 'Langendorf M', filterButton: true },
-                { name: 'Rüttenen W', filterButton: true },
-                { name: 'Rüttenen M', filterButton: true },
-                { name: 'Oberdorf W', filterButton: true },
-                { name: 'Oberdorf M', filterButton: true },
-                { name: 'Bellach W', filterButton: true },
-                { name: 'Bellach M', filterButton: true },
-                { name: 'Selzach W', filterButton: true },
-                { name: 'Selzach M', filterButton: true },
-                { name: 'Lommiswil W', filterButton: true },
-                { name: 'Lommiswil M', filterButton: true },
-                { name: 'Bettlach W', filterButton: true },
-                { name: 'Bettlach M', filterButton: true },
-                { name: 'Solothurn W', filterButton: true },
-                { name: 'Solothurn M', filterButton: true },
-                { name: 'Andere W', filterButton: true },
-                { name: 'Andere M', filterButton: true },
-                { name: 'Anzahl Kids', filterButton: true },
-                { name: 'Anzahl Jugendtliche', filterButton: true },
-            ],
-            rows: [],
-        });
-        const eventTable = worksheetEvents.getTable('Events');
-        events.forEach(data => {
-            let places = countPersonsPerCity(data, personData);
-            let row = [
-                data.event.name,
-                parseDate(data.event.eventDate),
-                data.event.place,
-                data.event.comments,
-                data.event.participants.length,
-                places.women,
-                places.man,
-                places.langendorfW,
-                places.langendorfM,
-                places.rüttenenW,
-                places.rüttenenM,
-                places.oberdorfW,
-                places.oberdorfM,
-                places.bellachW,
-                places.bellachM,
-                places.selzachW,
-                places.selzachM,
-                places.lommiswilW,
-                places.lommiswilM,
-                places.bettlachW,
-                places.bettlachM,
-                places.solothurnW,
-                places.solothurnM,
-                places.andereW,
-                places.andereM,
-                places.kids,
-                places.teens,
-            ];
-            eventTable.addRow(row, 0);
-        });
-        eventTable.commit();
-        worksheetEvents.getRows(1, 4).height = 30;
-        worksheetEvents.getCell('A1').value = "Events";
-        worksheetEvents.getCell('A1').font = {
-                size: 18,
-                bold: true,
-                family: 4,
-            },
-            worksheetEvents.getCell('A3').value = 'Anzahl exportierte Events:       ' + events.length;
-        await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(function() {
-            logger.info('Excel file saved');
-            res.download(path.join(__dirname, '../../exports/' + filename + '.xlsx'));
+        await router.createStatisticExcel(req.body.eventNames, req.body.years, filename, (result) => {
+            if (result) {
+                res.download(path.join(__dirname, '../../exports/' + filename + '.xlsx'));
+            } else {
+                throw result;
+            }
         });
     } catch (err) {
         logger.error(`Can't load collection: ${req.params.id} cause: ${err}`)
@@ -350,20 +261,112 @@ router.post('/excel/statistic', authenticateToken, async(req, res, next) => {
     }
 });
 
+router.createStatisticExcel = async(eventNames, years, filename, callback) => {
+    console.log(`start`);
+    let personData = await Person.find({});
+    let eventData = await Event.find({});
+    let events = eventData.filter(event => years.includes(new Date(event.event.eventDate).getFullYear().toString()))
+    if (eventNames !== "*") {
+        events = events.filter(event => eventNames.includes(event.event.name));
+    }
+    let workbook = new exceljs.Workbook();
+    //worksheet Events
+    let worksheetEvents = workbook.addWorksheet('Events');
+    worksheetEvents.addTable({
+        name: 'Events',
+        ref: 'A5',
+        headerRow: true,
+        totalsRow: true,
+        style: {
+            theme: 'TableStyleDark4',
+            showRowStripes: true,
+        },
+        columns: [
+            { name: 'Name', filterButton: true },
+            { name: 'Datum', filterButton: true },
+            { name: 'Wo', filterButton: true },
+            { name: 'Kommentar', filterButton: true },
+            { name: 'Anzahl Personen', filterButton: true },
+            { name: 'Anzahl Frauen', filterButton: true },
+            { name: 'Anzahl Männer', filterButton: true },
+            { name: 'Langendorf W', filterButton: true },
+            { name: 'Langendorf M', filterButton: true },
+            { name: 'Oberdorf W', filterButton: true },
+            { name: 'Oberdorf M', filterButton: true },
+            { name: 'Rüttenen W', filterButton: true },
+            { name: 'Rüttenen M', filterButton: true },
+            { name: 'Bellach W', filterButton: true },
+            { name: 'Bellach M', filterButton: true },
+            { name: 'Selzach W', filterButton: true },
+            { name: 'Selzach M', filterButton: true },
+            { name: 'Lommiswil W', filterButton: true },
+            { name: 'Lommiswil M', filterButton: true },
+            { name: 'Solothurn W', filterButton: true },
+            { name: 'Solothurn M', filterButton: true },
+            { name: 'Andere W', filterButton: true },
+            { name: 'Andere M', filterButton: true },
+        ],
+        rows: [],
+    });
+    const eventTable = worksheetEvents.getTable('Events');
+    events.forEach(data => {
+        let places = countPersonsPerCity(data, personData);
+        let row = [
+            data.event.name,
+            parseDate(data.event.eventDate),
+            data.event.place,
+            data.event.comments,
+            data.event.participants.length,
+            places.women,
+            places.man,
+            places.langendorfW,
+            places.langendorfM,
+            places.oberdorfW,
+            places.oberdorfM,
+            places.rüttenenW,
+            places.rüttenenM,
+            places.bellachW,
+            places.bellachM,
+            places.selzachW,
+            places.selzachM,
+            places.lommiswilW,
+            places.lommiswilM,
+            places.solothurnW,
+            places.solothurnM,
+            places.andereW,
+            places.andereM,
+        ];
+        eventTable.addRow(row, 0);
+    });
+    eventTable.commit();
+    worksheetEvents.getRows(1, 4).height = 30;
+    worksheetEvents.getCell('A1').value = "Events";
+    worksheetEvents.getCell('A1').font = {
+            size: 18,
+            bold: true,
+            family: 4,
+        },
+        worksheetEvents.getCell('A3').value = 'Anzahl exportierte Events:       ' + events.length;
+    await workbook.xlsx.writeFile('./exports/' + filename + '.xlsx').then(() => {
+        logger.info('Excel file saved');
+        callback(true);
+    }).catch((err) => {
+        logger.error(`Could not save excel: ${err}`);
+        callback(err);
+    });
+}
+
 function countPersonsPerCity(eventItem, personData) {
     let eventPersons = personData.filter(item => eventItem.event.participants.includes(item._id));
     let places = {
         man: 0,
         women: 0,
-        kids: 0,
-        teens: 0,
         langendorfW: 0,
         rüttenenW: 0,
         oberdorfW: 0,
         bellachW: 0,
         selzachW: 0,
         lommiswilW: 0,
-        bettlachW: 0,
         solothurnW: 0,
         andereW: 0,
         langendorfM: 0,
@@ -372,7 +375,6 @@ function countPersonsPerCity(eventItem, personData) {
         bellachM: 0,
         selzachM: 0,
         lommiswilM: 0,
-        bettlachM: 0,
         solothurnM: 0,
         andereM: 0,
     }
@@ -380,148 +382,52 @@ function countPersonsPerCity(eventItem, personData) {
         if (item.person.city === 'Langendorf' && item.person.gender === "W") {
             places.langendorfW++;
             places.women++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Langendorf' && item.person.gender === "M") {
             places.langendorfM++;
             places.man++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Rüttenen' && item.person.gender === "W") {
             places.rüttenenW++;
             places.women++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Rüttenen' && item.person.gender === "M") {
             places.rüttenenM++;
             places.man++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Oberdorf' && item.person.gender === "W") {
             places.oberdorfW++;
             places.women++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Oberdorf' && item.person.gender === "M") {
             places.oberdorfM++;
             places.man++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Bellach' && item.person.gender === "W") {
             places.bellachW++;
             places.women++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Bellach' && item.person.gender === "M") {
             places.bellachM++;
             places.man++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Selzach' && item.person.gender === "W") {
             places.selzachW++;
             places.women++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Selzach' && item.person.gender === "M") {
             places.selzachM++;
             places.man++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Lommiswil' && item.person.gender === "W") {
             places.lommiswilW++;
             places.women++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Lommiswil' && item.person.gender === "M") {
             places.lommiswilM++;
             places.man++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
-        } else if (item.person.city === 'Bettlach' && item.person.gender === "W") {
-            places.bellachW++;
-            places.women++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
-        } else if (item.person.city === 'Bettlach' && item.person.gender === "M") {
-            places.bellachM++;
-            places.man++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Solothurn' && item.person.gender === "W") {
             places.solothurnW++;
             places.women++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else if (item.person.city === 'Solothurn' && item.person.gender === "M") {
             places.solothurnM++;
             places.man++;
-            if (item.person.age < 13) {
-                places.kids++
-            } else {
-                places.teens++
-            }
         } else {
             if (item.person.gender === 'W') {
                 places.women++;
-                places.andere++;
-                if (item.person.age < 13) {
-                    places.kids++
-                } else {
-                    places.teens++
-                }
+                places.andereW++;
             } else {
                 places.man++;
-                places.andere++;
-                if (item.person.age < 13) {
-                    places.kids++
-                } else {
-                    places.teens++
-                }
+                places.andereM++;
             }
         }
     });
@@ -537,8 +443,5 @@ function parseDate(date) {
         return ""
     }
 }
-
-
-
 
 module.exports = router;
