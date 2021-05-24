@@ -100,9 +100,9 @@ app.use(middlewares.errorHandler);
   | | hour
   | minute
   second ( optional )
-  // every 1th of month = '* * * 1,2,3,4,5,6,7,8,9,10,11,12 1'
+  // every 1th of month = '0 0 1 * *'
 */
-cron.schedule('* * * 1,2,3,4,5,6,7,8,9,10,11,12 1', async() => {
+cron.schedule('0 0 1 * *', async() => {
     logger.info('start mail report job...');
     moment.locale('de-ch');
     let filename = "Statistik " + new moment(new Date()).format('LL');
